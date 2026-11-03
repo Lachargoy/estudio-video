@@ -29,6 +29,8 @@ description: Genera video o imagen con modelos de OpenRouter por ComfyUI usando 
 - **Usa H3 (`minimax/hailuo-3`) para video:** es el modelo por defecto si la receta no indica otro. Propón otro solo si la persona lo pide o si H3 no sirve para la pieza, por ejemplo cuando el presupuesto no alcanza, y explica por qué.
 - Para imágenes indica siempre el modelo. `google/gemini-2.5-flash-image` funcionó bien para editar y crear estados iniciales.
 - Si el video debe mostrar una transformación o terminar en una imagen exacta, usa `primer_cuadro` y `ultimo_cuadro`, no `referencias`. Lee `docs/FLUJO.md`.
+- Para pasar de 15 s, encadena con `continuar_de` y une con `estudio unir --recortar-inicio 1`. Muestra el costo total de todas las tomas antes de pedir aprobación y revisa cada toma antes de generar la siguiente.
+- Los videos de referencia solo funcionan con un enlace HTTPS público (`estudio cola` prepara el fragmento). Nunca subas un fragmento a un sitio público sin aprobación explícita de la persona para ese material.
 - Mantén el mismo personaje entre tomas con `referencias` o con el fotograma de la toma anterior.
 - Para modelos sin estimado o para imágenes, revisa el precio con `estudio modelos`, avisa a la persona que no hay estimado y usa `--sin-estimado` solo con su aprobación.
 

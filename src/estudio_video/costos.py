@@ -45,6 +45,8 @@ def estimar(receta, modelo):
     if por_segundo is None:
         return None
     imagenes = len(receta.get("referencias", [])) + sum(1 for k in ("primer_cuadro", "ultimo_cuadro") if receta.get(k))
+    if receta.get("continuar_de"):
+        imagenes += 1
     por_imagen = float(skus.get("reference_images", 0)) + float(skus.get("cents_per_image_input", 0)) / 100
     extra = por_imagen * imagenes
     return round(por_segundo * int(receta["duracion"]) + extra, 4)

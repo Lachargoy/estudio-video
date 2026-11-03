@@ -1,10 +1,83 @@
 """Post-proceso local con ffmpeg y, para blanquear, numpy y scipy."""
+import json
 import subprocess
 from pathlib import Path
 
 
 def _ffmpeg(*args, capturar=False):
     return subprocess.run(["ffmpeg", "-hide_banner", *args], check=True, capture_output=capturar, text=capturar)
+
+
+def _medir(video):
+    salida = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "stream=codec_type,width,height,r_frame_rate:format=duration", "-of", "json", str(video)],
+        check=True, capture_output=True, text=True).stdout
+    datos = json.loads(salida)
+    imagen = next(s for s in datos["streams"] if s["codec_type"] == "video")
+    num, den = imagen["r_frame_rate"].split("/")
+    return {
+        "ancho": int(imagen["width"]), "alto": int(imagen["height"]), "fps": float(num) / float(den),
+        "duracion": float(datos["format"]["duration"]), "audio": any(s["codec_type"] == "audio" for s in datos["streams"]),
+    }
+
+
+def ultimo_cuadro(video, destino):
+    """Extrae el último cuadro. Un PNG evita agregar compresión a la toma siguiente."""
+    _ffmpeg("-v", "error", "-y", "-sseof", "-0.25", "-i", str(video), "-update", "1", "-frames:v", "1", str(destino))
+    if not Path(destino).is_file():
+        raise ValueError(f"No se pudo extraer el último cuadro de {video}")
+    return Path(destino)
+
+
+def cola_video(video, destino, segundos):
+    """Copia los últimos segundos en H.264 y AAC para usarlos como video de referencia."""
+    inicio = max(0.0, _medir(video)["duracion"] - float(segundos))
+    _ffmpeg("-v", "error", "-y", "-ss", f"{inicio:.3f}", "-i", str(video), "-c:v", "libx264", "-preset", "veryfast", "-crf", "16",
+            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", str(destino))
+    return Path(destino)
+
+
+def unir(videos, salida, recortar_inicio=0, fundido=0.0):
+    """Une tomas con el formato de la primera. `recortar_inicio` quita cuadros repetidos de las siguientes.
+
+    El fundido de audio usa pesos que suman 1 para no subir el volumen en el empalme.
+    """
+    if len(videos) < 2:
+        raise ValueError("Se necesitan al menos dos videos")
+    medidas = [_medir(v) for v in videos]
+    base = medidas[0]
+    entradas, filtros = [], []
+    duraciones = []
+    for i, (video, m) in enumerate(zip(videos, medidas)):
+        entradas += ["-i", str(video)]
+        corte = recortar_inicio / m["fps"] if i and recortar_inicio else 0.0
+        duracion = m["duracion"] - corte
+        if duracion <= fundido:
+            raise ValueError(f"{video} es demasiado corto para este fundido")
+        duraciones.append(duracion)
+        filtros.append(
+            f"[{i}:v]trim=start={corte:.5f},setpts=PTS-STARTPTS,"
+            f"scale={base['ancho']}:{base['alto']}:force_original_aspect_ratio=decrease,"
+            f"pad={base['ancho']}:{base['alto']}:(ow-iw)/2:(oh-ih)/2:white,fps={base['fps']:.5f},format=yuv420p,setsar=1[v{i}]")
+        if m["audio"]:
+            filtros.append(f"[{i}:a]atrim=start={corte:.5f},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo[a{i}]")
+        else:
+            filtros.append(f"anullsrc=r=48000:cl=stereo,atrim=duration={duracion:.5f},asetpts=PTS-STARTPTS[a{i}]")
+    if fundido:
+        v, a, acumulado = "v0", "a0", duraciones[0]
+        for i in range(1, len(videos)):
+            filtros.append(f"[{v}][v{i}]xfade=transition=fade:duration={fundido}:offset={acumulado - fundido:.5f}[vx{i}]")
+            filtros.append(f"[{a}][a{i}]acrossfade=d={fundido}:c1=tri:c2=tri[ax{i}]")
+            v, a, acumulado = f"vx{i}", f"ax{i}", acumulado + duraciones[i] - fundido
+        final_v, final_a = v, a
+    else:
+        pares = "".join(f"[v{i}][a{i}]" for i in range(len(videos)))
+        filtros.append(f"{pares}concat=n={len(videos)}:v=1:a=1[vf][af]")
+        final_v, final_a = "vf", "af"
+    _ffmpeg("-v", "error", "-y", *entradas, "-filter_complex", ";".join(filtros), "-map", f"[{final_v}]", "-map", f"[{final_a}]",
+            "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k",
+            "-movflags", "+faststart", str(salida))
+    return Path(salida)
 
 
 def web(origen, destino, nombre, ancho=1920, blanco=False):

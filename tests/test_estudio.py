@@ -1,9 +1,11 @@
 import json
+import shutil
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
-from estudio_video import costos, grafo, receta
+from estudio_video import costos, grafo, limpieza, receta
 
 ESQUEMA = {
     "output_name": ["video", "poster", "local job id", "provider job id", "metadata JSON", "estimated cost USD", "actual cost USD"],
@@ -16,6 +18,7 @@ ESQUEMA = {
                 "aspect_ratio": ["COMBO", {"default": "16:9", "options": ["16:9", "9:16"]}],
                 "generate_audio": ["COMBO", {"default": "false", "options": ["false", "true", "provider default"]}],
                 "reference_images": ["COMFY_AUTOGROW_V3", {"template": {"names": ["reference_image_1", "reference_image_2"]}}],
+                "reference_videos": ["COMFY_AUTOGROW_V3", {"template": {"names": ["reference_video_1"]}}],
             },
             "optional": {"first_frame": ["IMAGE", {}], "last_frame": ["IMAGE", {}]},
         }}]}],
@@ -46,6 +49,13 @@ class Grafo(unittest.TestCase):
         self.assertEqual(g["g"]["inputs"]["model.first_frame"], ["first_frame", 0])
         self.assertEqual(g["g"]["inputs"]["model.last_frame"], ["last_frame", 0])
 
+    def test_video_de_referencia_por_enlace(self):
+        url = "https://ejemplo.com/cola.mp4"
+        g = grafo.construir(base(videos_referencia=[url]), ESQUEMA, {})
+        self.assertEqual(json.loads(g["g"]["inputs"]["model.remote_references_json"]), [{"type": "video_url", "video_url": {"url": url}}])
+        with self.assertRaisesRegex(ValueError, "hasta 1"):
+            grafo.construir(base(videos_referencia=[url, url]), ESQUEMA, {})
+
     def test_rechaza_valores_invalidos_antes_de_enviar(self):
         with self.assertRaisesRegex(ValueError, "duracion"):
             grafo.construir(base(duracion=7), ESQUEMA, {})
@@ -67,6 +77,10 @@ class Costos(unittest.TestCase):
     def test_cobro_por_imagen_de_entrada(self):
         m = {"pricing_skus": {"cents_per_image_input": "1", "cents_per_video_output_second_480p": "2"}}
         self.assertAlmostEqual(costos.estimar(base(duracion=1, resolucion="480p", primer_cuadro="a.png"), m), 0.03)
+
+    def test_continuar_cuenta_la_imagen(self):
+        m = {"pricing_skus": {"duration_seconds": "0.13", "reference_images": "0.04"}}
+        self.assertAlmostEqual(costos.estimar(base(duracion=5, continuar_de="a.mp4"), m), 0.69)
 
     def test_audio(self):
         m = {"pricing_skus": {"duration_seconds_with_audio": "0.40", "duration_seconds_without_audio": "0.20"}}
@@ -96,6 +110,24 @@ class Receta(unittest.TestCase):
         with self.assertRaisesRegex(receta.ErrorReceta, "modelo"):
             receta.cargar(self.escribir({"nombre": "n", "tipo": "imagen", "prompt": "p", "max_usd": 1}))
 
+    def test_continuacion(self):
+        comun = {"nombre": "n", "prompt": "p", "duracion": 5, "max_usd": 1, "continuar_de": "a.png"}
+        self.assertTrue(receta.cargar(self.escribir(comun))["continuar_de"].is_absolute())
+        for extra, texto in [
+            ({"primer_cuadro": "a.png"}, "ya define"),
+            ({"referencias": ["a.png"]}, "no lo combines"),
+            ({"tipo": "imagen", "modelo": "m"}, "solo aplica"),
+        ]:
+            with self.assertRaisesRegex(receta.ErrorReceta, texto):
+                receta.cargar(self.escribir({**comun, **extra}))
+
+    def test_videos_de_referencia_exigen_https(self):
+        comun = {"nombre": "n", "prompt": "p", "duracion": 5, "max_usd": 1}
+        with self.assertRaisesRegex(receta.ErrorReceta, "HTTPS"):
+            receta.cargar(self.escribir({**comun, "videos_referencia": ["a.mp4"]}))
+        r = receta.cargar(self.escribir({**comun, "videos_referencia": ["https://ejemplo.com/a.mp4"]}))
+        self.assertEqual(r["videos_referencia"], ["https://ejemplo.com/a.mp4"])
+
     def test_errores(self):
         for datos, texto in [
             ({"modelo": "m", "prompt": "p", "max_usd": 1, "duracion": 5}, "nombre"),
@@ -107,6 +139,49 @@ class Receta(unittest.TestCase):
         ]:
             with self.assertRaisesRegex(receta.ErrorReceta, texto):
                 receta.cargar(self.escribir(datos))
+
+
+@unittest.skipUnless(shutil.which("ffmpeg"), "requiere ffmpeg")
+class Video(unittest.TestCase):
+    def setUp(self):
+        self.d = Path(tempfile.mkdtemp())
+
+    def clip(self, nombre, color, segundos=1, audio=True):
+        ruta = self.d / nombre
+        args = ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", f"color=c={color}:s=64x36:r=24:d={segundos}"]
+        if audio:
+            args += ["-f", "lavfi", "-i", f"sine=f=440:d={segundos}"]
+        subprocess.run([*args, "-pix_fmt", "yuv420p", "-shortest", str(ruta)], check=True)
+        return ruta
+
+    def test_ultimo_cuadro_es_el_final(self):
+        a, b = self.clip("a.mp4", "red"), self.clip("b.mp4", "blue")
+        unido = limpieza.unir([a, b], self.d / "u.mp4")
+        png = limpieza.ultimo_cuadro(unido, self.d / "fin.ppm")
+        crudo = png.read_bytes()[-3:]
+        self.assertGreater(crudo[2], crudo[0])
+
+    def test_cola_dura_lo_pedido(self):
+        cola = limpieza.cola_video(self.clip("a.mp4", "red", 3), self.d / "c.mp4", 1)
+        self.assertAlmostEqual(limpieza._medir(cola)["duracion"], 1, delta=0.1)
+
+    def test_unir_sin_audio_y_otro_tamano(self):
+        a = self.clip("a.mp4", "red")
+        b = self.d / "b.mp4"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=blue:s=128x128:r=30:d=1", "-pix_fmt", "yuv420p", str(b)], check=True)
+        m = limpieza._medir(limpieza.unir([a, b], self.d / "u.mp4"))
+        self.assertEqual((m["ancho"], m["alto"]), (64, 36))
+        self.assertTrue(m["audio"])
+        self.assertAlmostEqual(m["duracion"], 2, delta=0.15)
+
+    def test_recorte_y_fundido_ajustan_la_duracion(self):
+        a, b = self.clip("a.mp4", "red"), self.clip("b.mp4", "blue")
+        recortado = limpieza._medir(limpieza.unir([a, b], self.d / "r.mp4", recortar_inicio=12))
+        self.assertAlmostEqual(recortado["duracion"], 1.5, delta=0.15)
+        fundido = limpieza._medir(limpieza.unir([a, b], self.d / "f.mp4", fundido=0.5))
+        self.assertAlmostEqual(fundido["duracion"], 1.5, delta=0.15)
+        with self.assertRaisesRegex(ValueError, "corto"):
+            limpieza.unir([a, b], self.d / "x.mp4", fundido=2)
 
 
 if __name__ == "__main__":

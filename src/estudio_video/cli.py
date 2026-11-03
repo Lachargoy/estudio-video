@@ -4,7 +4,9 @@ import datetime
 import json
 import os
 import shutil
+import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -46,8 +48,23 @@ def cmd_estimar(args):
     print(f"Saldo: ${_cliente(args).saldo():.3f}")
 
 
+def _resolver_continuacion(r, carpeta):
+    """Usa el último cuadro de la toma anterior como primer cuadro."""
+    if not r.get("continuar_de"):
+        return
+    if not shutil.which("ffmpeg"):
+        sys.exit("«continuar_de» necesita ffmpeg")
+    r["primer_cuadro"] = limpieza.ultimo_cuadro(r["continuar_de"], Path(carpeta) / "continuacion.png")
+
+
 def cmd_generar(args):
+    with tempfile.TemporaryDirectory(prefix="estudio-") as carpeta:
+        _generar(args, carpeta)
+
+
+def _generar(args, carpeta):
     r, estimado = _preparar(args.receta)
+    _resolver_continuacion(r, carpeta)
     cli = _cliente(args)
     esquema = cli.esquema(grafo.NODOS[r["tipo"]])
     # Valida la receta contra el esquema antes de subir nada o gastar.
@@ -66,7 +83,7 @@ def cmd_generar(args):
     if not args.si and input("¿Generar y gastar? Escribe sí: ").strip().lower() not in ("si", "sí"):
         sys.exit("Cancelado; no se envió nada.")
 
-    subidas = {p: cli.subir_imagen(p) for p in locales}
+    subidas = {p: cli.subir(p) for p in locales}
     for intento in range(REINTENTOS_EN_CURSO + 1):
         g = grafo.construir(r, esquema, subidas)
         res = cli.ejecutar(g, args.limite)
@@ -100,6 +117,7 @@ def cmd_generar(args):
             "fecha": datetime.datetime.now(datetime.timezone.utc).isoformat(), "nombre": r["nombre"], "modelo": r["modelo"],
             "costo_usd": costo, "estimado_usd": estimado, "archivos": [str(x) for x in guardados],
             "trabajo": meta.get("provider_job_id") or meta.get("local_job_id"),
+            "continuar_de": str(r["continuar_de"]) if r.get("continuar_de") else None,
         }, ensure_ascii=False) + "\n")
 
 
@@ -116,6 +134,19 @@ def cmd_revisar(args):
 def cmd_blanquear(args):
     print(f"Fondo detectado: {limpieza.blanquear(args.entrada, args.salida)} % de la imagen")
     print("Guardado:", args.salida)
+
+
+def cmd_ultimo_cuadro(args):
+    print("Guardado:", limpieza.ultimo_cuadro(args.video, args.salida))
+
+
+def cmd_cola(args):
+    print("Guardado:", limpieza.cola_video(args.video, args.salida, args.segundos))
+    print("OpenRouter necesita este fragmento en un enlace HTTPS público. Confirma que se puede publicar antes de subirlo.")
+
+
+def cmd_unir(args):
+    print("Guardado:", limpieza.unir(args.videos, args.salida, args.recortar_inicio, args.fundido))
 
 
 def cmd_web(args):
@@ -148,6 +179,21 @@ def main(argv=None):
     b.add_argument("entrada")
     b.add_argument("salida")
     b.set_defaults(f=cmd_blanquear)
+    u = sub.add_parser("ultimo-cuadro", help="Extrae el último cuadro de un video")
+    u.add_argument("video")
+    u.add_argument("salida")
+    u.set_defaults(f=cmd_ultimo_cuadro)
+    o = sub.add_parser("cola", help="Prepara los últimos segundos de un video para usarlos como referencia")
+    o.add_argument("video")
+    o.add_argument("salida")
+    o.add_argument("--segundos", type=float, default=2.0)
+    o.set_defaults(f=cmd_cola)
+    n = sub.add_parser("unir", help="Une tomas en un solo video")
+    n.add_argument("videos", nargs="+")
+    n.add_argument("-o", "--salida", required=True)
+    n.add_argument("--recortar-inicio", type=int, default=0, help="Cuadros a quitar al inicio de cada toma siguiente; usa 1 tras `continuar_de`")
+    n.add_argument("--fundido", type=float, default=0.0, help="Segundos de fundido entre tomas")
+    n.set_defaults(f=cmd_unir)
     w = sub.add_parser("web", help="Comprime para web y saca pósteres")
     w.add_argument("video")
     w.add_argument("--destino", default="web")
@@ -155,10 +201,12 @@ def main(argv=None):
     w.add_argument("--blanco", action="store_true", help="Empuja el casi blanco a blanco puro")
     w.set_defaults(f=cmd_web)
     args = p.parse_args(argv)
-    if args.cmd in ("revisar", "blanquear", "web") and not shutil.which("ffmpeg"):
+    if args.cmd in ("revisar", "blanquear", "web", "ultimo-cuadro", "cola", "unir") and not shutil.which("ffmpeg"):
         sys.exit("Este comando necesita ffmpeg")
     try:
         args.f(args)
+    except subprocess.CalledProcessError as e:
+        sys.exit(f"Error de ffmpeg: {(e.stderr or '').strip()[:500] or e}")
     except (ErrorComfy, receta.ErrorReceta, ValueError, FileNotFoundError, TimeoutError) as e:
         sys.exit(f"Error: {e}")
 

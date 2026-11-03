@@ -30,7 +30,8 @@ class Cliente:
     def esquema(self, nodo):
         return self._json(f"/object_info/{nodo}")[nodo]
 
-    def subir_imagen(self, ruta):
+    def subir(self, ruta):
+        """Sube una imagen a la carpeta de entrada de ComfyUI."""
         ruta = Path(ruta)
         limite = uuid.uuid4().hex
         tipo = mimetypes.guess_type(ruta.name)[0] or "application/octet-stream"

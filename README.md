@@ -30,6 +30,9 @@ estudio generar receta.json             # muestra el costo y pide confirmación
 estudio revisar salidas/pieza.mp4       # datos, silencios y hoja de cuadros
 estudio blanquear gris.mp4 blanco.mp4   # fondo gris de cámara fija a blanco
 estudio web pieza.mp4 --destino web --nombre pieza --blanco   # MP4, WebM y pósteres
+estudio ultimo-cuadro toma.mp4 fin.png  # último cuadro de una toma
+estudio cola toma.mp4 cola.mp4 --segundos 2   # últimos segundos, para usarlos como referencia
+estudio unir a.mp4 b.mp4 -o final.mp4 --recortar-inicio 1     # une tomas
 ```
 
 ## Receta
@@ -57,10 +60,41 @@ estudio web pieza.mp4 --destino web --nombre pieza --blanco   # MP4, WebM y pós
 | `resolucion`, `formato`, `audio` | Opcionales; se validan contra el modelo |
 | `referencias` | Imágenes guía. No se combinan con fotogramas |
 | `primer_cuadro`, `ultimo_cuadro` | Fotogramas. Úsalos cuando el video debe terminar en una imagen exacta |
+| `continuar_de` | Toma anterior: su último cuadro será el inicio de esta. Ver [Encadenar tomas](#encadenar-tomas) |
+| `videos_referencia` | Enlaces HTTPS públicos de videos guía, en los modelos que los admiten. No se combinan con fotogramas |
 | `salida` | Carpeta de resultados (por defecto `salidas/`) |
 | `opciones` | Otros parámetros del modelo, con su nombre real |
 
 Hay recetas de ejemplo en [ejemplos/](ejemplos/) y las lecciones de producción en [docs/FLUJO.md](docs/FLUJO.md).
+
+## Encadenar tomas
+
+Para pasar de los 15 s de una toma, genera cada una a partir de la anterior y únelas al final.
+
+```json
+{"nombre": "toma-2", "prompt": "Continúa la acción...", "duracion": 8, "continuar_de": "salidas/toma-1.mp4", "max_usd": 1.2}
+```
+
+```bash
+estudio generar toma-2.json
+estudio unir salidas/toma-1.mp4 salidas/toma-2.mp4 -o final.mp4 --recortar-inicio 1
+```
+
+`continuar_de` usa el último cuadro como inicio de la toma nueva. `--recortar-inicio 1` quita ese cuadro repetido, y con `--fundido 0.5` las tomas se funden en lugar de cortar.
+
+El modelo conserva la imagen, pero no conoce el movimiento ni el audio anteriores, así que describe la acción en el prompt y revisa cada empalme. Cada toma se cobra completa.
+
+### Seguir movimiento y sonido con video de referencia
+
+Modelos como H3 aceptan video de referencia, pero OpenRouter solo lo recibe desde un **enlace HTTPS público**, no como archivo local:
+
+```bash
+estudio cola salidas/toma-1.mp4 cola.mp4 --segundos 2
+```
+
+Sube `cola.mp4` a un sitio público y pon el enlace en `"videos_referencia": ["https://..."]`. Cualquiera con el enlace puede verlo, así que confirma antes que ese material se puede publicar.
+
+Esto no sustituye la continuación con máscara de *latents*, que necesita el modelo corriendo en una GPU propia.
 
 ## Con un agente
 
@@ -79,6 +113,8 @@ Hay recetas de ejemplo en [ejemplos/](ejemplos/) y las lecciones de producción 
 - Linux, Python 3.14, ComfyUI 0.43.0 y OpenRouter Studio 0.3.0.
 - Con cobro real desde esta herramienta: video con primer fotograma (Grok Imagine Lite) e imagen con referencia (Gemini 2.5 Flash Image).
 - MiniMax H3 se usó en producción con el mismo nodo y los mismos parámetros, pero mediante los scripts que dieron origen a esta herramienta.
+- Encadenar tomas con `continuar_de` y `unir`: probado con cobro real en una toma de 1 s con Grok Imagine Lite.
+- Video de referencia por enlace: sin probar. La petición no recibió error de enlace, pero se detuvo por falta de saldo.
 
 Sin probar: macOS, Windows y varias personas sobre un mismo ComfyUI.
 

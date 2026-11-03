@@ -1,4 +1,5 @@
 """Construye el grafo de ComfyUI a partir del esquema real del nodo, sin fijar parámetros por modelo."""
+import json
 import time
 
 NODOS = {"video": "OpenRouterStudioVideo", "imagen": "OpenRouterStudioImage"}
@@ -76,6 +77,14 @@ def construir(receta, esquema, subidas, nonce=None):
             raise ValueError(f"Este modelo admite hasta {len(nombres)} referencias")
         for i, ruta in enumerate(receta["referencias"]):
             entradas[f"model.reference_images.{nombres[i]}"] = cargar(f"r{i}", ruta)
+    if receta.get("videos_referencia"):
+        molde = requeridos.get("reference_videos")
+        if not molde:
+            raise ValueError(f"El modelo {receta['modelo']} no admite videos de referencia")
+        if len(receta["videos_referencia"]) > len(molde[1]["template"]["names"]):
+            raise ValueError(f"Este modelo admite hasta {len(molde[1]['template']['names'])} videos de referencia")
+        entradas["model.remote_references_json"] = json.dumps(
+            [{"type": "video_url", "video_url": {"url": u}} for u in receta["videos_referencia"]])
     for clave, nombre in (("primer_cuadro", "first_frame"), ("ultimo_cuadro", "last_frame")):
         if receta.get(clave):
             if nombre not in opcionales:

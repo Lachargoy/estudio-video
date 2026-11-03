@@ -1,0 +1,9 @@
+{
+  "nombre": "toma-2",
+  "duracion": 8,
+  "resolucion": "2K",
+  "audio": true,
+  "continuar_de": "salidas/toma-1.mp4",
+  "max_usd": 1.2,
+  "prompt": "Continue the action from this frame, keeping the same characters, style, lighting and camera. The giant character now waves goodbye while the small characters cheer. Sound: the same funny made-up gibberish voices and clay sound effects. No on-screen text."
+}

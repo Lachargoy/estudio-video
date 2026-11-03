@@ -5,3 +5,4 @@ Plantillas basadas en una producción real, con los personajes y la marca reempl
 - `imagen-inicial.json`: crea el estado inicial a partir de la imagen final.
 - `armar-logo.json`: transformación con primer y último fotograma.
 - `mesa.json`: escena con personajes como referencias.
+- `continuar.json`: toma que sigue a otra desde su último cuadro.
