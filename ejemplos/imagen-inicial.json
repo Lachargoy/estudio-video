@@ -1,0 +1,9 @@
+{
+  "nombre": "letras-tiradas",
+  "tipo": "imagen",
+  "modelo": "google/gemini-2.5-flash-image",
+  "formato": "16:9",
+  "referencias": ["imagenes/logo-final.png"],
+  "max_usd": 0.1,
+  "prompt": "Edit this image. Keep the exact same claymation style, pure white background, camera, lighting and framing, and the same characters. Change only this: the logo is NOT built yet. The big clay letters lie scattered and fallen flat on the white floor in a messy pile, unreadable as a word. There are no other logo elements anywhere. A loose rope lies on the floor tied to the letters and the giant character holds its end, about to pull. Add no other text."
+}

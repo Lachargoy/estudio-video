@@ -1,0 +1,10 @@
+{
+  "nombre": "mesa",
+  "duracion": 10,
+  "resolucion": "2K",
+  "formato": "16:9",
+  "audio": true,
+  "referencias": ["imagenes/personaje-1.png", "imagenes/personaje-2.png", "imagenes/personaje-3.png"],
+  "max_usd": 1.6,
+  "prompt": "Handmade stop-motion claymation with visible plasticine texture and slightly jerky charming timing. Pure seamless white background, clean as an empty whiteboard, soft even studio light, soft contact shadows, locked-off wide shot, nothing else in the scene. Keep every character's design exactly as in the reference images. The characters sit together at one long rustic wooden table having dinner, loaded with clay food, bread and cups. One character is gigantic, filling most of the frame, while the others look tiny next to him. They all eat happily and laugh. The giant sneaks food off a small character's plate and grins, the small character protests, and another one raises a cup in a toast. Sound: the characters constantly chatter in a funny high-pitched made-up gibberish language, with no real words, giggling, with playful clay foley sound effects. No narrator, no subtitles, no captions, no on-screen text."
+}

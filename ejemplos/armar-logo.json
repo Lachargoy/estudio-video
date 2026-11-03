@@ -1,0 +1,10 @@
+{
+  "nombre": "armar-logo",
+  "duracion": 8,
+  "resolucion": "2K",
+  "audio": true,
+  "primer_cuadro": "imagenes/letras-tiradas.png",
+  "ultimo_cuadro": "imagenes/logo-final.png",
+  "max_usd": 1.5,
+  "prompt": "Handmade stop-motion claymation with visible plasticine texture and slightly jerky charming timing. Pure seamless white background, locked-off wide shot. The fallen clay letters lift off the floor and are built into the big brand logo shown in the final frame. A giant friendly character, laughing, hauls a rope hand over hand and the heavy letters rise upright one by one. A small character climbs on top of a rising letter, waving a flag and shouting orders. Another small character pushes the last letter into place with both hands, straining. Sound: the characters constantly chatter in a funny high-pitched made-up gibberish language, with no real words, giggling and shouting nonsense at each other like cute cartoon sidekicks, with playful clay foley sound effects. No narrator, no subtitles, no captions, no on-screen text other than the logo."
+}

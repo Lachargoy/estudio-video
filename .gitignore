@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+build/
+dist/
+salidas/
+*.mp4
+*.webm
+*.wav
+.env
+*credentials*
+*client_secret*
