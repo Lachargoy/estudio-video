@@ -125,3 +125,7 @@ PYTHONPATH=src python3 -m unittest discover -s tests
 ```
 
 No gastan saldo ni necesitan ComfyUI.
+
+## Licencia
+
+Dominio público, bajo [The Unlicense](LICENSE): úsala, modifícala o véndela sin pedir permiso ni dar crédito, y sin garantía de ningún tipo. Cubre solo este repositorio. ComfyUI, el nodo OpenRouter Studio y cada modelo tienen sus propias licencias y condiciones de uso.
