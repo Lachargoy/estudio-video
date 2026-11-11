@@ -35,6 +35,21 @@ estudio cola toma.mp4 cola.mp4 --segundos 2   # últimos segundos, para usarlos 
 estudio unir a.mp4 b.mp4 -o final.mp4 --recortar-inicio 1     # une tomas
 ```
 
+## Panel
+
+```bash
+estudio panel ruta/a/mis-recetas --abrir   # http://127.0.0.1:4300/
+```
+
+Una página local para quien prefiere no usar la terminal:
+
+- Lista las recetas de la carpeta con su estimado frente al tope, lo gastado según `registro.jsonl` y su estado: sin generar, generada, receta con error o esperando la toma anterior (`continuar_de`).
+- Reproduce los videos e imágenes de cada receta y permite descargarlos, revisarlos (hoja de cuadros) y sacar el último cuadro.
+- Consulta el saldo de OpenRouter.
+- **Generar** abre una confirmación con modelo, duración, estimado, tope y saldo. Solo se envía si la persona marca «Apruebo gastar hasta $X en esta toma». Si la receta cambió desde que se mostró, o el estimado supera lo aprobado, no se envía nada. Hay una generación a la vez y se aplican las mismas reglas que en `estudio generar`.
+
+Solo escucha en `127.0.0.1` y solo sirve archivos de la carpeta indicada. Necesita ComfyUI encendido para el saldo y para generar; sin ComfyUI se pueden ver recetas, estimados y resultados.
+
 ## Receta
 
 ```json

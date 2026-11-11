@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estudio · panel</title>
+<style>
+:root{--fondo:#f6f5f1;--papel:#fff;--tinta:#1f2328;--suave:#5c6370;--linea:#dcdad3;--acento:#2f5bd3;--acento-suave:#e8eefc;--ok:#1f7a4d;--ok-suave:#e3f4ea;--alerta:#8a5a00;--alerta-suave:#fdf2d8;--error:#a8322b;--error-suave:#fbe6e4;--radio:12px}
+@media (prefers-color-scheme:dark){:root{--fondo:#16181c;--papel:#1f2227;--tinta:#eceae4;--suave:#a5abb5;--linea:#353941;--acento:#8fb0ff;--acento-suave:#24304d;--ok:#7fd3a6;--ok-suave:#1d3328;--alerta:#f0c35d;--alerta-suave:#3a3020;--error:#f29a92;--error-suave:#3d2422}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--linea);background:var(--papel);border-radius:9px;padding:8px 14px;min-height:40px}
+button:hover:not(:disabled){border-color:var(--tinta)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.principal{background:var(--acento);border-color:var(--acento);color:#fff;font-weight:600}
+@media (prefers-color-scheme:dark){button.principal{color:#111}}
+:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+header{position:sticky;top:0;z-index:5;background:var(--papel);border-bottom:1px solid var(--linea)}
+.barra{max-width:1200px;margin:auto;padding:12px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+h1{font-size:20px;margin:0}
+.carpeta{font:13px ui-monospace,monospace;color:var(--suave);overflow-wrap:anywhere;flex:1;min-width:200px}
+.saldo{display:flex;gap:8px;align-items:center}
+.saldo strong{font-variant-numeric:tabular-nums}
+main{max-width:1200px;margin:auto;padding:20px}
+.avisos p{margin:0 0 10px;padding:10px 14px;border-radius:var(--radio);background:var(--alerta-suave);color:var(--alerta)}
+.resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.dato{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);padding:12px 14px}
+.dato span{display:block;font-size:12px;color:var(--suave)}
+.dato strong{font-size:22px;font-variant-numeric:tabular-nums}
+.trabajo{border-radius:var(--radio);padding:14px 16px;margin-bottom:18px;border:1px solid var(--linea);background:var(--papel)}
+.trabajo.en-curso{border-color:var(--acento);background:var(--acento-suave)}
+.trabajo.listo{border-color:var(--ok);background:var(--ok-suave)}
+.trabajo.error{border-color:var(--error);background:var(--error-suave)}
+.trabajo pre{margin:8px 0 0;white-space:pre-wrap;font:12px/1.5 ui-monospace,monospace;max-height:160px;overflow:auto}
+.filtros{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filtros input[type=search]{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--linea);border-radius:9px;background:var(--papel)}
+.grupo h2{font:600 13px ui-monospace,monospace;color:var(--suave);margin:22px 0 8px}
+.receta{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);margin-bottom:10px}
+.cabeza{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 16px;align-items:center}
+.titulo{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.titulo h3{margin:0;font-size:16px}
+.meta{font-size:13px;color:var(--suave);margin-top:2px}
+.chip{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--fondo);border:1px solid var(--linea)}
+.chip.ok{background:var(--ok-suave);color:var(--ok);border-color:transparent}
+.chip.alerta{background:var(--alerta-suave);color:var(--alerta);border-color:transparent}
+.chip.error{background:var(--error-suave);color:var(--error);border-color:transparent}
+.costos{text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+.costos small{display:block;color:var(--suave)}
+.acciones{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+details.detalle{border-top:1px solid var(--linea)}
+details.detalle summary{padding:10px 16px;cursor:pointer;color:var(--suave);font-size:14px}
+.cuerpo{padding:0 16px 16px}
+.prompt{white-space:pre-wrap;background:var(--fondo);border-radius:9px;padding:10px 12px;font-size:13px;max-height:180px;overflow:auto}
+.salidas{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:12px}
+.salida{border:1px solid var(--linea);border-radius:10px;overflow:hidden;background:var(--fondo)}
+.salida video,.salida img{display:block;width:100%;max-height:260px;object-fit:contain;background:#000}
+.salida img{background:transparent}
+.salida div{padding:8px 10px;font-size:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.salida div span{flex:1 1 100%;overflow-wrap:anywhere}
+.salida button{min-height:32px;padding:4px 10px;font-size:12px}
+.vacio{color:var(--suave);font-size:14px}
+.error-texto{color:var(--error);font-size:13px;margin:6px 0 0}
+dialog{border:1px solid var(--linea);border-radius:16px;background:var(--papel);color:var(--tinta);padding:0;width:min(520px,calc(100vw - 32px))}
+dialog::backdrop{background:#0008}
+.dialogo{padding:20px}
+.dialogo h2{margin:0 0 4px;font-size:18px}
+.filas{margin:14px 0;border-top:1px solid var(--linea)}
+.filas div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--linea);font-variant-numeric:tabular-nums}
+.filas dt{color:var(--suave)}.filas dd{margin:0;font-weight:600;text-align:right}
+.aprobar{display:flex;gap:10px;align-items:flex-start;background:var(--alerta-suave);color:var(--alerta);border-radius:10px;padding:12px;margin:12px 0}
+.aprobar input{width:20px;height:20px;margin-top:2px;flex-shrink:0}
+.pie-dialogo{display:flex;gap:8px;justify-content:flex-end}
+.estado-vivo{position:absolute;left:-9999px}
+@media (max-width:640px){.cabeza{grid-template-columns:1fr}.costos{text-align:left}.acciones{justify-content:flex-start}}
+</style>
+</head>
+<body>
+<header>
+  <div class="barra">
+    <h1>Estudio</h1>
+    <div class="carpeta" id="carpeta">…</div>
+    <div class="saldo"><span>Saldo OpenRouter</span><strong id="saldo">—</strong><button type="button" id="ver-saldo">Consultar</button></div>
+  </div>
+</header>
+<main>
+  <div class="avisos" id="avisos"></div>
+  <section class="resumen" aria-label="Resumen">
+    <div class="dato"><span>Recetas</span><strong id="n-recetas">0</strong></div>
+    <div class="dato"><span>Sin generar</span><strong id="n-pendientes">0</strong></div>
+    <div class="dato"><span>Gastado (registro)</span><strong id="gastado">$0.00</strong></div>
+    <div class="dato"><span>Estimado pendiente</span><strong id="pendiente">$0.00</strong></div>
+  </section>
+  <section id="trabajo" class="trabajo" hidden aria-live="polite"></section>
+  <div class="filtros">
+    <input type="search" id="buscar" placeholder="Buscar por nombre, ruta o prompt" aria-label="Buscar recetas">
+    <label><input type="checkbox" id="solo-pendientes"> Solo sin generar</label>
+    <button type="button" id="recargar">Recargar</button>
+  </div>
+  <div id="lista"><p class="vacio">Cargando recetas…</p></div>
+</main>
+
+<dialog id="dialogo" aria-labelledby="d-titulo">
+  <form method="dialog" class="dialogo" id="d-form">
+    <h2 id="d-titulo">Generar</h2>
+    <div class="meta" id="d-ruta"></div>
+    <dl class="filas" id="d-filas"></dl>
+    <p class="error-texto" id="d-error" hidden></p>
+    <label class="aprobar"><input type="checkbox" id="d-aprobar"><span id="d-texto-aprobar"></span></label>
+    <div class="pie-dialogo">
+      <button type="submit" value="cancelar">Cancelar</button>
+      <button type="button" class="principal" id="d-generar" disabled>Generar y gastar</button>
+    </div>
+  </form>
+</dialog>
+<div class="estado-vivo" role="status" id="vivo"></div>
+
+<script>
+const TOKEN = "__TOKEN__";
+const $ = id => document.getElementById(id);
+const usd = n => n == null ? "—" : "$" + Number(n).toFixed(2);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let estado = null, saldo = null, abierto = new Set(), sondeo = null;
+
+async function api(ruta, datos) {
+  const opciones = datos === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json", "X-Estudio-Token": TOKEN}, body: JSON.stringify(datos)};
+  const r = await fetch(ruta, opciones);
+  const cuerpo = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(cuerpo.error || `Error ${r.status}`);
+  return cuerpo;
+}
+const archivo = ruta => "/archivo?ruta=" + encodeURIComponent(ruta);
+function anunciar(t) { $("vivo").textContent = t; }
+
+async function cargar() {
+  try { estado = await api("/api/estado"); } catch (e) { $("lista").innerHTML = `<p class="error-texto">${esc(e.message)}</p>`; return; }
+  $("carpeta").textContent = estado.carpeta;
+  const avisos = [];
+  if (estado.catalogo) avisos.push("Sin catálogo de precios: " + estado.catalogo + ". No habrá estimados.");
+  if (!estado.ffmpeg) avisos.push("No se encontró ffmpeg: revisar videos, último cuadro y tomas encadenadas no funcionarán.");
+  $("avisos").innerHTML = avisos.map(a => `<p>${esc(a)}</p>`).join("");
+  pintarTrabajo(estado.trabajo);
+  pintar();
+  const enCurso = estado.trabajo && estado.trabajo.estado === "en curso";
+  clearTimeout(sondeo);
+  if (enCurso) sondeo = setTimeout(cargar, 3000);
+}
+
+function estadoReceta(r) {
+  if (r.error) return ["error", "Receta con error"];
+  if (r.espera) return ["alerta", "Espera toma anterior"];
+  const videos = r.salidas.filter(s => !s.hoja);
+  if (videos.length) return ["ok", videos.length === 1 ? "Generada" : `${videos.length} versiones`];
+  return ["", "Sin generar"];
+}
+
+function pintar() {
+  const q = $("buscar").value.trim().toLowerCase(), soloPend = $("solo-pendientes").checked;
+  const recetas = estado.recetas;
+  $("n-recetas").textContent = recetas.length;
+  const pendientes = recetas.filter(r => !r.salidas.some(s => !s.hoja));
+  $("n-pendientes").textContent = pendientes.length;
+  $("gastado").textContent = usd(recetas.reduce((a, r) => a + r.gastado_usd, 0));
+  $("pendiente").textContent = usd(pendientes.reduce((a, r) => a + (r.estimado_usd || 0), 0));
+  const visibles = recetas.filter(r => (!soloPend || pendientes.includes(r)) &&
+    (!q || [r.nombre, r.ruta, r.prompt].some(x => String(x || "").toLowerCase().includes(q))));
+  if (!recetas.length) { $("lista").innerHTML = `<p class="vacio">No hay recetas en esta carpeta. Una receta es un JSON con «nombre» y «prompt» (ver ejemplos/).</p>`; return; }
+  if (!visibles.length) { $("lista").innerHTML = `<p class="vacio">Ninguna receta coincide.</p>`; return; }
+  const grupos = {};
+  for (const r of visibles) (grupos[r.ruta.includes("/") ? r.ruta.slice(0, r.ruta.lastIndexOf("/")) : "."] ??= []).push(r);
+  const ocupado = estado.trabajo && estado.trabajo.estado === "en curso";
+  $("lista").innerHTML = Object.entries(grupos).map(([g, rs]) => `<section class="grupo"><h2>${esc(g)}/</h2>${rs.map(r => tarjeta(r, ocupado)).join("")}</section>`).join("");
+}
+
+function tarjeta(r, ocupado) {
+  const [clase, texto] = estadoReceta(r);
+  const supera = r.estimado_usd != null && r.max_usd != null && r.estimado_usd > r.max_usd;
+  const puede = !r.error && !r.espera && !ocupado && !supera;
+  const motivo = r.error ? "La receta tiene un error" : r.espera ? r.espera : ocupado ? "Hay una generación en curso" : supera ? "El estimado supera el tope" : "";
+  const salidas = r.salidas.map(s => `<figure class="salida">${s.tipo === "video"
+      ? `<video src="${archivo(s.ruta)}" controls preload="metadata" aria-label="${esc(s.nombre)}"></video>`
+      : `<img src="${archivo(s.ruta)}" alt="${esc(s.nombre)}" loading="lazy">`}
+      <div><span>${esc(s.nombre)} · ${(s.bytes / 1048576).toFixed(1)} MB</span>
+      ${s.tipo === "video" ? `<button type="button" data-revisar="${esc(s.ruta)}">Revisar</button><button type="button" data-ultimo="${esc(s.ruta)}">Último cuadro</button>` : ""}
+      <a href="${archivo(s.ruta)}" download>Descargar</a></div></figure>`).join("");
+  return `<article class="receta" data-ruta="${esc(r.ruta)}">
+    <div class="cabeza">
+      <div>
+        <div class="titulo"><h3>${esc(r.nombre)}</h3><span class="chip ${clase}">${texto}</span></div>
+        <div class="meta">${esc(r.tipo)} · ${esc(r.modelo || "sin modelo")}${r.duracion ? ` · ${esc(r.duracion)} s` : ""}${r.continuar_de ? ` · continúa de ${esc(r.continuar_de)}` : ""}</div>
+        ${r.error ? `<p class="error-texto">${esc(r.error)}</p>` : supera ? `<p class="error-texto">El estimado (${usd(r.estimado_usd)}) supera el tope de la receta (${usd(r.max_usd)}): sube «max_usd» o baja la duración.</p>` : ""}
+      </div>
+      <div>
+        <div class="costos">Estimado ${usd(r.estimado_usd)} · tope ${usd(r.max_usd)}<small>${r.generaciones ? `Gastado ${usd(r.gastado_usd)} en ${r.generaciones} ${r.generaciones === 1 ? "generación" : "generaciones"}` : "Sin gasto registrado"}</small></div>
+        <div class="acciones"><button type="button" class="principal" data-generar="${esc(r.ruta)}" ${puede ? "" : "disabled"} ${motivo ? `title="${esc(motivo)}"` : ""}>${r.salidas.some(s => !s.hoja) ? "Generar otra versión…" : "Generar…"}</button></div>
+      </div>
+    </div>
+    <details class="detalle" ${abierto.has(r.ruta) ? "open" : ""} data-detalle="${esc(r.ruta)}">
+      <summary>Prompt y resultados (${r.salidas.length})</summary>
+      <div class="cuerpo"><div class="prompt">${esc(r.prompt)}</div>
+      ${salidas ? `<div class="salidas">${salidas}</div>` : `<p class="vacio">Todavía no hay resultados.</p>`}
+      <div class="resultado-accion" aria-live="polite"></div></div>
+    </details>
+  </article>`;
+}
+
+function pintarTrabajo(t) {
+  const caja = $("trabajo");
+  if (!t) { caja.hidden = true; return; }
+  caja.hidden = false;
+  caja.className = "trabajo " + (t.estado === "en curso" ? "en-curso" : t.estado);
+  const seg = Math.round(((t.fin || Date.now() / 1000) - t.inicio));
+  const titulo = t.estado === "en curso" ? `Generando ${t.receta} · ${seg} s` : t.estado === "listo"
+    ? `Listo: ${t.receta} · costo real ${usd(t.resultado && t.resultado.costo_usd)}` : `No se generó ${t.receta}`;
+  caja.innerHTML = `<strong>${esc(titulo)}</strong>${t.error ? `<p class="error-texto">${esc(t.error)}</p>` : ""}<pre>${esc(t.log.join("\n"))}</pre>`;
+}
+
+async function consultarSaldo() {
+  $("ver-saldo").disabled = true; $("saldo").textContent = "…";
+  try { saldo = (await api("/api/saldo", {})).saldo_usd; $("saldo").textContent = "$" + saldo.toFixed(3); anunciar("Saldo " + saldo.toFixed(2)); }
+  catch (e) { saldo = null; $("saldo").textContent = "—"; $("avisos").insertAdjacentHTML("beforeend", `<p>${esc(e.message)}</p>`); }
+  finally { $("ver-saldo").disabled = false; }
+  return saldo;
+}
+
+async function abrirDialogo(ruta) {
+  const r = estado.recetas.find(x => x.ruta === ruta); if (!r) return;
+  const sinEstimado = r.estimado_usd == null;
+  const aprobado = sinEstimado ? Number(r.max_usd) : r.estimado_usd;
+  $("d-titulo").textContent = "Generar " + r.nombre;
+  $("d-ruta").textContent = r.ruta;
+  $("d-error").hidden = true; $("d-aprobar").checked = false; $("d-generar").disabled = true;
+  $("d-texto-aprobar").textContent = sinEstimado
+    ? `Este modelo no tiene estimado. Apruebo gastar en esta toma, una sola vez, con el tope de ${usd(r.max_usd)} de la receta y el riesgo de que el precio real difiera.`
+    : `Apruebo gastar hasta ${usd(aprobado)} en esta toma, una sola vez. Un reintento con costo necesita otra aprobación.`;
+  const filas = (s) => [["Modelo", r.modelo], ["Tipo", r.tipo], ["Duración", r.duracion ? r.duracion + " s" : "—"],
+    ["Estimado", usd(r.estimado_usd)], ["Tope de la receta", usd(r.max_usd)], ["Saldo", s === undefined ? "consultando…" : s == null ? "no disponible" : "$" + s.toFixed(3)],
+    ...(r.continuar_de ? [["Continúa de", r.continuar_de]] : [])].map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join("");
+  $("d-filas").innerHTML = filas(undefined);
+  $("dialogo").returnValue = ""; $("dialogo").showModal();
+  $("dialogo").dataset.ruta = ruta; $("dialogo").dataset.huella = r.huella;
+  $("dialogo").dataset.aprobado = aprobado; $("dialogo").dataset.sinEstimado = sinEstimado;
+  const s = await consultarSaldo();
+  $("d-filas").innerHTML = filas(s);
+  if (s == null) { $("d-error").textContent = "No se pudo consultar el saldo. Revisa que ComfyUI esté abierto."; $("d-error").hidden = false; }
+  else if (!sinEstimado && r.estimado_usd > s) { $("d-error").textContent = "El estimado supera el saldo disponible."; $("d-error").hidden = false; }
+}
+
+$("d-aprobar").addEventListener("change", e => { $("d-generar").disabled = !e.target.checked || !$("d-error").hidden; });
+$("d-generar").addEventListener("click", async () => {
+  const d = $("dialogo");
+  $("d-generar").disabled = true;
+  try {
+    await api("/api/generar", {receta: d.dataset.ruta, huella: d.dataset.huella, aprobado_usd: Number(d.dataset.aprobado),
+      sin_estimado: d.dataset.sinEstimado === "true", confirmacion: $("d-aprobar").checked});
+    d.close(); anunciar("Generación iniciada"); cargar();
+  } catch (e) { $("d-error").textContent = e.message; $("d-error").hidden = false; }
+});
+
+document.addEventListener("click", async e => {
+  const g = e.target.closest("[data-generar]"); if (g) return abrirDialogo(g.dataset.generar);
+  const b = e.target.closest("[data-revisar],[data-ultimo]"); if (!b) return;
+  const caja = b.closest(".cuerpo").querySelector(".resultado-accion");
+  b.disabled = true; caja.textContent = "Procesando…";
+  try {
+    if (b.dataset.revisar) {
+      const r = await api("/api/revisar", {archivo: b.dataset.revisar});
+      caja.innerHTML = `<p>${esc(r.info)}<br>Errores: ${esc(r.errores || "ninguno")} · Silencios: ${esc(JSON.stringify(r.silencios) || "ninguno")}<br><em>${esc(r.aviso)}</em></p><img src="${archivo(r.hoja)}" alt="Hoja de cuadros" style="max-width:100%">`;
+    } else {
+      const r = await api("/api/ultimo-cuadro", {archivo: b.dataset.ultimo});
+      caja.innerHTML = `<p>Guardado: ${esc(r.imagen)}</p><img src="${archivo(r.imagen)}" alt="Último cuadro" style="max-width:100%">`;
+    }
+  } catch (err) { caja.innerHTML = `<p class="error-texto">${esc(err.message)}</p>`; }
+  finally { b.disabled = false; }
+});
+document.addEventListener("toggle", e => { const d = e.target; if (d.dataset && d.dataset.detalle) d.open ? abierto.add(d.dataset.detalle) : abierto.delete(d.dataset.detalle); }, true);
+$("ver-saldo").addEventListener("click", consultarSaldo);
+$("recargar").addEventListener("click", cargar);
+$("buscar").addEventListener("input", pintar);
+$("solo-pendientes").addEventListener("change", pintar);
+cargar();
+</script>
+</body>
+</html>

@@ -10,6 +10,8 @@ Este repo contiene `estudio`, la herramienta para generar video e imagen con Ope
 4. **No subas material sensible** de clientes sin confirmar que se puede enviar a terceros.
 5. **Sé honesto con la revisión:** no puedes oír el audio; di que solo mediste que hay sonido y pide a una persona que lo escuche.
 
+6. **El panel (`estudio panel`) es para personas.** No llames a sus rutas `/api/generar` ni marques su aprobación por tu cuenta: la aprobación del panel la da quien está frente a la pantalla. Puedes abrirlo y explicar qué muestra.
+
 ## Pasos
 
 1. Pregunta lo que falte: historia, duración, formato, audio, dónde se usará y presupuesto.
