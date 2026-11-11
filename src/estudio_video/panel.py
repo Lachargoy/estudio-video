@@ -19,12 +19,13 @@ from importlib.resources import files
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import costos, generacion, limpieza, receta
+from . import costos, generacion, limpieza, produccion, receta
 from .comfy import Cliente, ErrorComfy
 
 MEDIOS = {".mp4", ".webm", ".mov", ".png", ".jpg", ".jpeg", ".gif", ".webp"}
 IGNORAR = {"salidas", "node_modules", ".git", ".venv", "venv", "__pycache__", "web"}
 MAX_RECETAS = 500
+MAX_SUBIDA = 25 * 1024 * 1024
 
 
 def huella(ruta):
@@ -45,11 +46,59 @@ class Estudio:
 
     # Recetas ---------------------------------------------------------------
     def _candidatas(self):
+        producciones = self.producciones_rutas()
         for ruta in sorted(self.carpeta.rglob("*.json")):
             partes = ruta.relative_to(self.carpeta).parts
             if any(p in IGNORAR or p.startswith(".") for p in partes[:-1]):
                 continue
+            if any(prod == ruta.parent or prod in ruta.parents for prod in producciones):
+                continue  # se ven en su producción
             yield ruta
+
+    # Producciones -----------------------------------------------------------
+    def producciones_rutas(self):
+        return produccion.buscar(self.carpeta)
+
+    def producciones(self):
+        lista = []
+        for ruta in self.producciones_rutas():
+            rel = str(ruta.relative_to(self.carpeta)) or "."
+            try:
+                lista.append({"id": rel, "titulo": produccion.Produccion(ruta).titulo, "error": None})
+            except (produccion.ErrorProduccion, ValueError) as e:
+                lista.append({"id": rel, "titulo": rel, "error": str(e)})
+        return lista
+
+    def produccion(self, pid):
+        ruta = (self.carpeta / pid).resolve()
+        if not self._dentro(ruta) or ruta not in self.producciones_rutas():
+            raise ValueError("Producción no encontrada")
+        return produccion.Produccion(ruta)
+
+    def _catalogo(self):
+        try:
+            return costos.catalogo()
+        except FileNotFoundError:
+            return None
+
+    def vista_produccion(self, pid):
+        prod = self.produccion(pid)
+        datos = prod.vista(self._catalogo())
+        base = str(prod.carpeta.relative_to(self.carpeta))
+        datos["id"] = pid
+        prefijo = "" if base == "." else base + "/"
+
+        def ajustar(x):
+            # Rutas relativas a la producción → relativas a la carpeta del panel (las que sirve /archivo).
+            if isinstance(x, dict):
+                return {k: (prefijo + v if k in ("archivo", "animatica") and isinstance(v, str) else
+                            {kk: prefijo + vv if vv else vv for kk, vv in v.items()} if k == "referencias_archivos" else ajustar(v))
+                        for k, v in x.items()}
+            if isinstance(x, list):
+                return [ajustar(v) for v in x]
+            return x
+
+        return ajustar(datos)
 
     def recetas(self):
         try:
@@ -146,13 +195,47 @@ class Estudio:
             raise ValueError("Receta no encontrada en la carpeta de trabajo")
         if huella(ruta) != huella_vista:
             raise ValueError("La receta cambió desde que la viste. Recarga el panel y revisa el estimado otra vez.")
-        aprobado = float(aprobado_usd)
+        return self._lanzar(rel, aprobado_usd, lambda confirmar, avisar: self.generar(
+            ruta, self.cliente, confirmar, sin_estimado=sin_estimado, avisar=avisar), lambda: huella(ruta) == huella_vista,
+            sin_estimado)
+
+    def iniciar_variante(self, pid, tid, vid, huella_vista, aprobado_usd):
+        prod = self.produccion(pid)
+        r, estimado, faltas = prod.receta_variante(tid, vid, self._catalogo())
+        if faltas:
+            raise ValueError("Antes de generar: " + "; ".join(faltas))
+        if prod.huella(r) != huella_vista:
+            raise ValueError("La toma cambió desde que la viste. Recarga el panel y revisa el estimado otra vez.")
+
+        def correr(confirmar, avisar):
+            vigente = self.produccion(pid)
+            r2, _, faltas2 = vigente.receta_variante(tid, vid, self._catalogo())
+            if faltas2 or vigente.huella(r2) != huella_vista:
+                raise ValueError("La toma cambió antes de enviar; no se envió nada.")
+            ruta = vigente.escribir_receta(r2)
+            resultado = self.generar(ruta, self.cliente, confirmar, avisar=avisar)
+            vigente = self.produccion(pid)
+            vigente.registrar_clip(tid, vid, resultado)
+            return resultado
+
+        return self._lanzar(f"{pid}: {tid}/{vid}", aprobado_usd, correr, lambda: True, False)
+
+    def iniciar_animatica(self, pid):
+        self.produccion(pid)
+        return self._lanzar(f"{pid}: animática", 0, lambda confirmar, avisar: {"archivo": str(
+            self.produccion(pid).animatica(avisar=avisar))}, lambda: True, True, gasta=False)
+
+    def _lanzar(self, nombre, aprobado_usd, trabajo_fn, vigente, sin_estimado, gasta=True):
+        aprobado = float(aprobado_usd or 0)
+        rel = nombre
         with self.cerrojo:
             if self.trabajo and self.trabajo["estado"] == "en curso":
                 raise ValueError("Ya hay una generación en curso; espera a que termine.")
             trabajo = {"id": secrets.token_hex(4), "receta": rel, "estado": "en curso", "inicio": time.time(), "fin": None,
                        "log": [], "resultado": None, "error": None, "aprobado_usd": aprobado}
             self.trabajo = trabajo
+
+        trabajo["gasta"] = gasta
 
         def confirmar(r, estimado, disponible):
             # La persona aprobó un monto en el panel: el estimado real no puede superarlo.
@@ -161,12 +244,11 @@ class Estudio:
                 return False
             if estimado is None and not sin_estimado:
                 return False
-            return huella(ruta) == huella_vista
+            return vigente()
 
         def correr():
             try:
-                trabajo["resultado"] = self.generar(ruta, self.cliente, confirmar, sin_estimado=sin_estimado,
-                                                    avisar=trabajo["log"].append)
+                trabajo["resultado"] = trabajo_fn(confirmar, trabajo["log"].append)
                 trabajo["estado"] = "listo"
             except Exception as e:  # el panel debe mostrar cualquier fallo, no morir
                 trabajo["estado"], trabajo["error"] = "error", str(e)
@@ -210,11 +292,12 @@ def crear_manejador(estudio, pagina):
                 return False
             return secrets.compare_digest(self.headers.get("X-Estudio-Token", ""), estudio.token)
 
-        def cuerpo(self):
+        def cuerpo(self, limite=64 * 1024, crudo=False):
             largo = int(self.headers.get("Content-Length") or 0)
-            if largo > 64 * 1024:
+            if largo > limite:
                 raise ValueError("Petición demasiado grande")
-            return json.loads(self.rfile.read(largo) or b"{}")
+            datos = self.rfile.read(largo)
+            return datos if crudo else json.loads(datos or b"{}")
 
         def do_HEAD(self):
             self.do_GET()
@@ -228,8 +311,13 @@ def crear_manejador(estudio, pagina):
             if url.path == "/api/estado":
                 datos = estudio.recetas()
                 datos.update(carpeta=str(estudio.carpeta), comfy=estudio.comfy, trabajo=estudio.trabajo,
-                             ffmpeg=bool(shutil.which("ffmpeg")))
+                             ffmpeg=bool(shutil.which("ffmpeg")), producciones=estudio.producciones())
                 return self.json(datos)
+            if url.path == "/api/produccion":
+                try:
+                    return self.json(estudio.vista_produccion(parse_qs(url.query).get("id", [""])[0]))
+                except (ValueError, produccion.ErrorProduccion) as e:
+                    return self.error(HTTPStatus.BAD_REQUEST, str(e))
             if url.path == "/archivo":
                 ruta = estudio.archivo(parse_qs(url.query).get("ruta", [""])[0])
                 if ruta is None:
@@ -276,8 +364,46 @@ def crear_manejador(estudio, pagina):
             if not self.host_local() or not self.peticion_propia():
                 return self.error(HTTPStatus.FORBIDDEN, "Petición no autorizada")
             try:
+                url = urlparse(self.path)
+                ruta = url.path
+                if ruta == "/api/produccion/subir":
+                    q = {k: v[0] for k, v in parse_qs(url.query).items()}
+                    prod = estudio.produccion(q.get("id", ""))
+                    datos = self.cuerpo(MAX_SUBIDA, crudo=True)
+                    ext = {"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp"}.get(self.headers.get("Content-Type", ""))
+                    if not ext:
+                        return self.error(HTTPStatus.UNSUPPORTED_MEDIA_TYPE, "Solo PNG, JPG o WebP")
+                    if q.get("personaje"):
+                        archivo = prod.subir_referencia(q["personaje"], q.get("vista", ""), datos, ext)
+                    else:
+                        archivo = prod.subir_imagen(q.get("toma", ""), q.get("imagen", ""), datos, ext)
+                    return self.json({"archivo": prod.rel(archivo)})
                 datos = self.cuerpo()
-                ruta = urlparse(self.path).path
+                if ruta == "/api/produccion/accion":
+                    prod = estudio.produccion(datos.get("id", ""))
+                    accion = datos.get("accion")
+                    if accion in ("aprobar", "descartar"):
+                        prod.decidir(datos.get("grupo"), datos.get("clave", ""), "aprobada" if accion == "aprobar" else "descartada",
+                                     datos.get("nota"))
+                    elif accion in ("aprobar_personaje", "cambios_personaje"):
+                        prod.decidir_personaje(datos.get("personaje", ""), "aprobado" if accion == "aprobar_personaje" else "cambios",
+                                               datos.get("nota"))
+                    elif accion == "corte":
+                        prod.elegir_corte(datos.get("toma", ""), datos.get("variante", ""))
+                    elif accion == "variante":
+                        prod.editar_variante(datos.get("toma", ""), datos.get("variante", ""), datos.get("primer"),
+                                             datos.get("ultimo"), datos.get("movimiento"))
+                    else:
+                        return self.error(HTTPStatus.BAD_REQUEST, "Acción desconocida")
+                    return self.json({"ok": True})
+                if ruta == "/api/produccion/generar":
+                    if datos.get("confirmacion") is not True:
+                        return self.error(HTTPStatus.BAD_REQUEST, "Falta la aprobación de la persona")
+                    t = estudio.iniciar_variante(datos.get("id", ""), datos.get("toma", ""), datos.get("variante", ""),
+                                                 datos.get("huella", ""), datos.get("aprobado_usd"))
+                    return self.json(t, HTTPStatus.ACCEPTED)
+                if ruta == "/api/produccion/animatica":
+                    return self.json(estudio.iniciar_animatica(datos.get("id", "")), HTTPStatus.ACCEPTED)
                 if ruta == "/api/saldo":
                     return self.json({"saldo_usd": estudio.cliente.saldo()})
                 if ruta == "/api/generar":
@@ -304,7 +430,7 @@ def crear_manejador(estudio, pagina):
                 return self.error(HTTPStatus.NOT_FOUND, "No existe")
             except ErrorComfy as e:
                 return self.error(HTTPStatus.BAD_GATEWAY, str(e))
-            except (ValueError, TypeError, OSError) as e:
+            except (ValueError, TypeError, OSError, KeyError, produccion.ErrorProduccion) as e:
                 return self.error(HTTPStatus.BAD_REQUEST, str(e))
 
     return Manejador

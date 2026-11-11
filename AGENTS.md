@@ -33,6 +33,12 @@ Este repo contiene `estudio`, la herramienta para generar video e imagen con Ope
 - Mantén el mismo personaje entre tomas con `referencias` o con el fotograma de la toma anterior.
 - Para modelos sin estimado o para imágenes, revisa el precio con `estudio modelos`, avisa a la persona que no hay estimado y usa `--sin-estimado` solo con su aprobación.
 
+## Producciones
+
+- Si la persona trae una idea de varias tomas, propón crear una producción (`estudio produccion nueva`) y ayúdale a llenar `produccion.json` y `guion.md`. Lee `docs/PRODUCCIONES.md`.
+- `estudio produccion estado <carpeta>` lista las imágenes que faltan con su prompt completo. Si te piden hacerlas, guárdalas como `imagenes/<toma>-<imagen>.png`; entran como pendientes de revisión.
+- No apruebes imágenes, clips ni personajes, y no generes clips desde el tablero: eso lo hace la persona en el panel.
+
 ## Si algo falla
 
 - `ComfyUI no responde`: pide a la persona que lo inicie, o inícialo con su script si te lo autorizó.

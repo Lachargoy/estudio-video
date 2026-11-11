@@ -5,103 +5,149 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Estudio · panel</title>
 <style>
-:root{--fondo:#f6f5f1;--papel:#fff;--tinta:#1f2328;--suave:#5c6370;--linea:#dcdad3;--acento:#2f5bd3;--acento-suave:#e8eefc;--ok:#1f7a4d;--ok-suave:#e3f4ea;--alerta:#8a5a00;--alerta-suave:#fdf2d8;--error:#a8322b;--error-suave:#fbe6e4;--radio:12px}
-@media (prefers-color-scheme:dark){:root{--fondo:#16181c;--papel:#1f2227;--tinta:#eceae4;--suave:#a5abb5;--linea:#353941;--acento:#8fb0ff;--acento-suave:#24304d;--ok:#7fd3a6;--ok-suave:#1d3328;--alerta:#f0c35d;--alerta-suave:#3a3020;--error:#f29a92;--error-suave:#3d2422}}
+:root{--fondo:#f6f5f1;--papel:#fff;--tinta:#1f2328;--suave:#5c6370;--linea:#dcdad3;--acento:#2f5bd3;--acento-suave:#e8eefc;--ok:#1f7a4d;--ok-suave:#e3f4ea;--alerta:#8a5a00;--alerta-suave:#fdf2d8;--error:#a8322b;--error-suave:#fbe6e4;--banda:#1e2a23;--banda-texto:#f3f1ea;--radio:12px}
+@media (prefers-color-scheme:dark){:root{--fondo:#16181c;--papel:#1f2227;--tinta:#eceae4;--suave:#a5abb5;--linea:#353941;--acento:#8fb0ff;--acento-suave:#24304d;--ok:#7fd3a6;--ok-suave:#1d3328;--alerta:#f0c35d;--alerta-suave:#3a3020;--error:#f29a92;--error-suave:#3d2422;--banda:#0f1512}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--fondo);color:var(--tinta);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-button,input{font:inherit;color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:1px solid var(--linea);background:var(--papel);border-radius:9px;padding:8px 14px;min-height:40px}
 button:hover:not(:disabled){border-color:var(--tinta)}
 button:disabled{opacity:.5;cursor:not-allowed}
 button.principal{background:var(--acento);border-color:var(--acento);color:#fff;font-weight:600}
+button.ok{background:var(--ok-suave);border-color:var(--ok);color:var(--ok)}
+button.mal{background:var(--error-suave);border-color:var(--error);color:var(--error)}
+button.chico{min-height:32px;padding:4px 10px;font-size:13px}
 @media (prefers-color-scheme:dark){button.principal{color:#111}}
 :focus-visible{outline:3px solid var(--acento);outline-offset:2px}
-header{position:sticky;top:0;z-index:5;background:var(--papel);border-bottom:1px solid var(--linea)}
-.barra{max-width:1200px;margin:auto;padding:12px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+select,textarea,input[type=search]{border:1px solid var(--linea);border-radius:8px;background:var(--papel);padding:6px 8px}
+header.barra-sup{position:sticky;top:0;z-index:5;background:var(--papel);border-bottom:1px solid var(--linea)}
+.barra{max-width:1320px;margin:auto;padding:10px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 h1{font-size:20px;margin:0}
-.carpeta{font:13px ui-monospace,monospace;color:var(--suave);overflow-wrap:anywhere;flex:1;min-width:200px}
+.carpeta{font:12px ui-monospace,monospace;color:var(--suave);overflow-wrap:anywhere;flex:1;min-width:180px}
 .saldo{display:flex;gap:8px;align-items:center}
 .saldo strong{font-variant-numeric:tabular-nums}
-main{max-width:1200px;margin:auto;padding:20px}
+nav.pestanas{max-width:1320px;margin:auto;padding:0 20px;display:flex;gap:4px;overflow-x:auto}
+nav.pestanas button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 12px;white-space:nowrap}
+nav.pestanas button[aria-selected=true]{border-bottom-color:var(--acento);font-weight:650}
+main{max-width:1320px;margin:auto;padding:20px}
 .avisos p{margin:0 0 10px;padding:10px 14px;border-radius:var(--radio);background:var(--alerta-suave);color:var(--alerta)}
-.resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
-.dato{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);padding:12px 14px}
-.dato span{display:block;font-size:12px;color:var(--suave)}
-.dato strong{font-size:22px;font-variant-numeric:tabular-nums}
 .trabajo{border-radius:var(--radio);padding:14px 16px;margin-bottom:18px;border:1px solid var(--linea);background:var(--papel)}
 .trabajo.en-curso{border-color:var(--acento);background:var(--acento-suave)}
 .trabajo.listo{border-color:var(--ok);background:var(--ok-suave)}
 .trabajo.error{border-color:var(--error);background:var(--error-suave)}
 .trabajo pre{margin:8px 0 0;white-space:pre-wrap;font:12px/1.5 ui-monospace,monospace;max-height:160px;overflow:auto}
+.resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.dato{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);padding:12px 14px}
+.dato span{display:block;font-size:12px;color:var(--suave)}
+.dato strong{font-size:22px;font-variant-numeric:tabular-nums}
+.chip{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--fondo);border:1px solid var(--linea);white-space:nowrap}
+.chip.ok,.chip.aprobada,.chip.aprobado{background:var(--ok-suave);color:var(--ok);border-color:transparent}
+.chip.alerta,.chip.pendiente,.chip.cambios{background:var(--alerta-suave);color:var(--alerta);border-color:transparent}
+.chip.error{background:var(--error-suave);color:var(--error);border-color:transparent}
+.vacio{color:var(--suave);font-size:14px}
+.error-texto{color:var(--error);font-size:13px;margin:6px 0 0}
+.meta{font-size:13px;color:var(--suave)}
+/* Recetas sueltas */
 .filtros{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-.filtros input[type=search]{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--linea);border-radius:9px;background:var(--papel)}
+.filtros input[type=search]{flex:1;min-width:200px}
 .grupo h2{font:600 13px ui-monospace,monospace;color:var(--suave);margin:22px 0 8px}
 .receta{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);margin-bottom:10px}
 .cabeza{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 16px;align-items:center}
 .titulo{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .titulo h3{margin:0;font-size:16px}
-.meta{font-size:13px;color:var(--suave);margin-top:2px}
-.chip{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--fondo);border:1px solid var(--linea)}
-.chip.ok{background:var(--ok-suave);color:var(--ok);border-color:transparent}
-.chip.alerta{background:var(--alerta-suave);color:var(--alerta);border-color:transparent}
-.chip.error{background:var(--error-suave);color:var(--error);border-color:transparent}
 .costos{text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
 .costos small{display:block;color:var(--suave)}
-.acciones{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.acciones{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}
 details.detalle{border-top:1px solid var(--linea)}
 details.detalle summary{padding:10px 16px;cursor:pointer;color:var(--suave);font-size:14px}
 .cuerpo{padding:0 16px 16px}
-.prompt{white-space:pre-wrap;background:var(--fondo);border-radius:9px;padding:10px 12px;font-size:13px;max-height:180px;overflow:auto}
+.prompt{white-space:pre-wrap;background:var(--fondo);border-radius:9px;padding:10px 12px;font-size:12.5px;max-height:180px;overflow:auto;margin:6px 0}
 .salidas{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:12px}
-.salida{border:1px solid var(--linea);border-radius:10px;overflow:hidden;background:var(--fondo)}
+.salida{border:1px solid var(--linea);border-radius:10px;overflow:hidden;background:var(--fondo);margin:0}
 .salida video,.salida img{display:block;width:100%;max-height:260px;object-fit:contain;background:#000}
 .salida img{background:transparent}
 .salida div{padding:8px 10px;font-size:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .salida div span{flex:1 1 100%;overflow-wrap:anywhere}
-.salida button{min-height:32px;padding:4px 10px;font-size:12px}
-.vacio{color:var(--suave);font-size:14px}
-.error-texto{color:var(--error);font-size:13px;margin:6px 0 0}
+/* Producción */
+.banda{background:var(--banda);color:var(--banda-texto);border-radius:16px;padding:22px 24px;margin-bottom:18px}
+.banda h2{margin:0;font-size:28px;letter-spacing:-.02em}
+.banda p{margin:6px 0 0;opacity:.85;max-width:780px}
+.contadores{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:16px}
+.contadores div{background:#ffffff14;border:1px solid #ffffff22;border-radius:10px;padding:10px 12px}
+.contadores strong{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.contadores span{font-size:12px;opacity:.8}
+.siguiente{background:var(--papel);border-left:4px solid var(--acento);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:14px}
+.bloque{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);margin-bottom:12px}
+.bloque>summary{padding:12px 16px;cursor:pointer;font-weight:650;font-size:14px;letter-spacing:.02em;text-transform:uppercase}
+.bloque>div{padding:0 16px 16px}
+.guion{white-space:pre-wrap;font-size:14px;max-height:480px;overflow:auto}
+.personajes{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.personaje{border:1px solid var(--linea);border-radius:12px;padding:12px}
+.personaje h3{margin:0;font-size:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.personaje h3 code{font-size:11px;color:var(--suave)}
+.vistas{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;margin:10px 0}
+.hueco{position:relative;aspect-ratio:1;border:1px dashed var(--linea);border-radius:9px;background:var(--fondo);overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--suave);cursor:pointer}
+.hueco img{width:100%;height:100%;object-fit:cover}
+.hueco small{position:absolute;bottom:0;left:0;right:0;background:#0009;color:#fff;padding:2px 4px;font-size:10px}
+.hueco input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.hueco:focus-within{outline:3px solid var(--acento)}
+.filtros-prod{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:16px 0 8px}
+.secuencia h2{margin:26px 0 4px;font-size:22px;letter-spacing:-.01em}
+.secuencia>p{margin:0 0 12px;color:var(--suave);font-size:14px}
+.toma{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);margin-bottom:14px;padding:14px 16px}
+.toma-cab{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.toma-cab h3{margin:0;font-size:17px}
+.toma-cab .num{font:700 20px ui-monospace,monospace;color:var(--acento)}
+.toma-cab .meta{margin-left:auto}
+.subt{font-size:12px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--suave);margin:14px 0 8px}
+.imagenes{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.img-toma{border:1px solid var(--linea);border-radius:10px;overflow:hidden;background:var(--fondo);display:flex;flex-direction:column}
+.img-toma .hueco{border:0;border-radius:0;aspect-ratio:16/9}
+.img-toma .info{padding:8px;display:flex;flex-direction:column;gap:6px;font-size:12.5px;flex:1}
+.fila{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.variantes{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}
+.variante{border:1px solid var(--linea);border-radius:10px;padding:10px 12px}
+.variante.corte{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok)}
+.variante video{width:100%;max-height:240px;background:#000;border-radius:8px;display:block;margin:8px 0}
+.cuadros{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.cuadros label{font-size:12px;color:var(--suave);display:flex;flex-direction:column;gap:4px}
+.mini{aspect-ratio:16/9;background:var(--fondo);border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--suave)}
+.mini img{width:100%;height:100%;object-fit:cover}
+.variante textarea{width:100%;min-height:58px;resize:vertical;font-size:13px}
+.costo{font-size:13px;font-variant-numeric:tabular-nums;color:var(--suave)}
+.oculto-prompt .prompt{display:none}
 dialog{border:1px solid var(--linea);border-radius:16px;background:var(--papel);color:var(--tinta);padding:0;width:min(520px,calc(100vw - 32px))}
 dialog::backdrop{background:#0008}
 .dialogo{padding:20px}
 .dialogo h2{margin:0 0 4px;font-size:18px}
 .filas{margin:14px 0;border-top:1px solid var(--linea)}
 .filas div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--linea);font-variant-numeric:tabular-nums}
-.filas dt{color:var(--suave)}.filas dd{margin:0;font-weight:600;text-align:right}
+.filas dt{color:var(--suave)}.filas dd{margin:0;font-weight:600;text-align:right;overflow-wrap:anywhere}
 .aprobar{display:flex;gap:10px;align-items:flex-start;background:var(--alerta-suave);color:var(--alerta);border-radius:10px;padding:12px;margin:12px 0}
 .aprobar input{width:20px;height:20px;margin-top:2px;flex-shrink:0}
 .pie-dialogo{display:flex;gap:8px;justify-content:flex-end}
+#n-texto{width:100%;min-height:90px}
 .estado-vivo{position:absolute;left:-9999px}
-@media (max-width:640px){.cabeza{grid-template-columns:1fr}.costos{text-align:left}.acciones{justify-content:flex-start}}
+@media (max-width:640px){.cabeza{grid-template-columns:1fr}.costos{text-align:left}.acciones{justify-content:flex-start}.variantes{grid-template-columns:1fr}.banda h2{font-size:22px}}
 </style>
 </head>
 <body>
-<header>
+<header class="barra-sup">
   <div class="barra">
     <h1>Estudio</h1>
     <div class="carpeta" id="carpeta">…</div>
     <div class="saldo"><span>Saldo OpenRouter</span><strong id="saldo">—</strong><button type="button" id="ver-saldo">Consultar</button></div>
   </div>
+  <nav class="pestanas" id="pestanas" role="tablist" aria-label="Producciones y recetas"></nav>
 </header>
 <main>
   <div class="avisos" id="avisos"></div>
-  <section class="resumen" aria-label="Resumen">
-    <div class="dato"><span>Recetas</span><strong id="n-recetas">0</strong></div>
-    <div class="dato"><span>Sin generar</span><strong id="n-pendientes">0</strong></div>
-    <div class="dato"><span>Gastado (registro)</span><strong id="gastado">$0.00</strong></div>
-    <div class="dato"><span>Estimado pendiente</span><strong id="pendiente">$0.00</strong></div>
-  </section>
   <section id="trabajo" class="trabajo" hidden aria-live="polite"></section>
-  <div class="filtros">
-    <input type="search" id="buscar" placeholder="Buscar por nombre, ruta o prompt" aria-label="Buscar recetas">
-    <label><input type="checkbox" id="solo-pendientes"> Solo sin generar</label>
-    <button type="button" id="recargar">Recargar</button>
-  </div>
-  <div id="lista"><p class="vacio">Cargando recetas…</p></div>
+  <div id="vista"><p class="vacio">Cargando…</p></div>
 </main>
 
 <dialog id="dialogo" aria-labelledby="d-titulo">
-  <form method="dialog" class="dialogo" id="d-form">
+  <form method="dialog" class="dialogo">
     <h2 id="d-titulo">Generar</h2>
     <div class="meta" id="d-ruta"></div>
     <dl class="filas" id="d-filas"></dl>
@@ -113,6 +159,17 @@ dialog::backdrop{background:#0008}
     </div>
   </form>
 </dialog>
+<dialog id="nota" aria-labelledby="n-titulo">
+  <form method="dialog" class="dialogo">
+    <h2 id="n-titulo">Nota de dirección</h2>
+    <p class="meta" id="n-ayuda">Qué cambiar. Se agrega al prompt de la siguiente versión.</p>
+    <textarea id="n-texto" required></textarea>
+    <div class="pie-dialogo" style="margin-top:12px">
+      <button type="submit" value="cancelar">Cancelar</button>
+      <button type="button" class="principal" id="n-ok">Guardar</button>
+    </div>
+  </form>
+</dialog>
 <div class="estado-vivo" role="status" id="vivo"></div>
 
 <script>
@@ -120,88 +177,35 @@ const TOKEN = "__TOKEN__";
 const $ = id => document.getElementById(id);
 const usd = n => n == null ? "—" : "$" + Number(n).toFixed(2);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let estado = null, saldo = null, abierto = new Set(), sondeo = null;
+const archivo = (ruta, v) => "/archivo?ruta=" + encodeURIComponent(ruta) + (v ? "&v=" + v : "");
+const ETIQ = {falta: "Falta", pendiente: "Por revisar", aprobada: "Aprobada", descartada: "Descartada", aprobado: "Aprobado", cambios: "Cambios pedidos"};
+let estado = null, saldo = null, abierto = new Set(), sondeo = null, actual = null, prod = null, recarga = Date.now();
+let soloPendiente = false, verPrompts = false;
 
-async function api(ruta, datos) {
-  const opciones = datos === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json", "X-Estudio-Token": TOKEN}, body: JSON.stringify(datos)};
+async function api(ruta, datos, crudo) {
+  let opciones = {};
+  if (crudo) opciones = {method: "POST", headers: {"Content-Type": crudo.type, "X-Estudio-Token": TOKEN}, body: crudo};
+  else if (datos !== undefined) opciones = {method: "POST", headers: {"Content-Type": "application/json", "X-Estudio-Token": TOKEN}, body: JSON.stringify(datos)};
   const r = await fetch(ruta, opciones);
   const cuerpo = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(cuerpo.error || `Error ${r.status}`);
   return cuerpo;
 }
-const archivo = ruta => "/archivo?ruta=" + encodeURIComponent(ruta);
 function anunciar(t) { $("vivo").textContent = t; }
+function aviso(t) { $("avisos").insertAdjacentHTML("beforeend", `<p>${esc(t)}</p>`); setTimeout(() => $("avisos").firstElementChild?.remove(), 8000); }
 
 async function cargar() {
-  try { estado = await api("/api/estado"); } catch (e) { $("lista").innerHTML = `<p class="error-texto">${esc(e.message)}</p>`; return; }
+  try { estado = await api("/api/estado"); } catch (e) { $("vista").innerHTML = `<p class="error-texto">${esc(e.message)}</p>`; return; }
   $("carpeta").textContent = estado.carpeta;
-  const avisos = [];
-  if (estado.catalogo) avisos.push("Sin catálogo de precios: " + estado.catalogo + ". No habrá estimados.");
-  if (!estado.ffmpeg) avisos.push("No se encontró ffmpeg: revisar videos, último cuadro y tomas encadenadas no funcionarán.");
-  $("avisos").innerHTML = avisos.map(a => `<p>${esc(a)}</p>`).join("");
+  const ids = [...estado.producciones.map(p => p.id), "__recetas"];
+  if (!ids.includes(actual)) actual = (location.hash.slice(1) && ids.includes(decodeURIComponent(location.hash.slice(1)))) ? decodeURIComponent(location.hash.slice(1)) : ids[0];
+  $("pestanas").innerHTML = [...estado.producciones.map(p => [p.id, p.titulo + (p.error ? " ⚠" : "")]), ["__recetas", `Recetas sueltas (${estado.recetas.length})`]]
+    .map(([id, t]) => `<button type="button" role="tab" aria-selected="${id === actual}" data-tab="${esc(id)}">${esc(t)}</button>`).join("");
   pintarTrabajo(estado.trabajo);
-  pintar();
-  const enCurso = estado.trabajo && estado.trabajo.estado === "en curso";
+  if (actual === "__recetas") pintarRecetas();
+  else await cargarProduccion();
   clearTimeout(sondeo);
-  if (enCurso) sondeo = setTimeout(cargar, 3000);
-}
-
-function estadoReceta(r) {
-  if (r.error) return ["error", "Receta con error"];
-  if (r.espera) return ["alerta", "Espera toma anterior"];
-  const videos = r.salidas.filter(s => !s.hoja);
-  if (videos.length) return ["ok", videos.length === 1 ? "Generada" : `${videos.length} versiones`];
-  return ["", "Sin generar"];
-}
-
-function pintar() {
-  const q = $("buscar").value.trim().toLowerCase(), soloPend = $("solo-pendientes").checked;
-  const recetas = estado.recetas;
-  $("n-recetas").textContent = recetas.length;
-  const pendientes = recetas.filter(r => !r.salidas.some(s => !s.hoja));
-  $("n-pendientes").textContent = pendientes.length;
-  $("gastado").textContent = usd(recetas.reduce((a, r) => a + r.gastado_usd, 0));
-  $("pendiente").textContent = usd(pendientes.reduce((a, r) => a + (r.estimado_usd || 0), 0));
-  const visibles = recetas.filter(r => (!soloPend || pendientes.includes(r)) &&
-    (!q || [r.nombre, r.ruta, r.prompt].some(x => String(x || "").toLowerCase().includes(q))));
-  if (!recetas.length) { $("lista").innerHTML = `<p class="vacio">No hay recetas en esta carpeta. Una receta es un JSON con «nombre» y «prompt» (ver ejemplos/).</p>`; return; }
-  if (!visibles.length) { $("lista").innerHTML = `<p class="vacio">Ninguna receta coincide.</p>`; return; }
-  const grupos = {};
-  for (const r of visibles) (grupos[r.ruta.includes("/") ? r.ruta.slice(0, r.ruta.lastIndexOf("/")) : "."] ??= []).push(r);
-  const ocupado = estado.trabajo && estado.trabajo.estado === "en curso";
-  $("lista").innerHTML = Object.entries(grupos).map(([g, rs]) => `<section class="grupo"><h2>${esc(g)}/</h2>${rs.map(r => tarjeta(r, ocupado)).join("")}</section>`).join("");
-}
-
-function tarjeta(r, ocupado) {
-  const [clase, texto] = estadoReceta(r);
-  const supera = r.estimado_usd != null && r.max_usd != null && r.estimado_usd > r.max_usd;
-  const puede = !r.error && !r.espera && !ocupado && !supera;
-  const motivo = r.error ? "La receta tiene un error" : r.espera ? r.espera : ocupado ? "Hay una generación en curso" : supera ? "El estimado supera el tope" : "";
-  const salidas = r.salidas.map(s => `<figure class="salida">${s.tipo === "video"
-      ? `<video src="${archivo(s.ruta)}" controls preload="metadata" aria-label="${esc(s.nombre)}"></video>`
-      : `<img src="${archivo(s.ruta)}" alt="${esc(s.nombre)}" loading="lazy">`}
-      <div><span>${esc(s.nombre)} · ${(s.bytes / 1048576).toFixed(1)} MB</span>
-      ${s.tipo === "video" ? `<button type="button" data-revisar="${esc(s.ruta)}">Revisar</button><button type="button" data-ultimo="${esc(s.ruta)}">Último cuadro</button>` : ""}
-      <a href="${archivo(s.ruta)}" download>Descargar</a></div></figure>`).join("");
-  return `<article class="receta" data-ruta="${esc(r.ruta)}">
-    <div class="cabeza">
-      <div>
-        <div class="titulo"><h3>${esc(r.nombre)}</h3><span class="chip ${clase}">${texto}</span></div>
-        <div class="meta">${esc(r.tipo)} · ${esc(r.modelo || "sin modelo")}${r.duracion ? ` · ${esc(r.duracion)} s` : ""}${r.continuar_de ? ` · continúa de ${esc(r.continuar_de)}` : ""}</div>
-        ${r.error ? `<p class="error-texto">${esc(r.error)}</p>` : supera ? `<p class="error-texto">El estimado (${usd(r.estimado_usd)}) supera el tope de la receta (${usd(r.max_usd)}): sube «max_usd» o baja la duración.</p>` : ""}
-      </div>
-      <div>
-        <div class="costos">Estimado ${usd(r.estimado_usd)} · tope ${usd(r.max_usd)}<small>${r.generaciones ? `Gastado ${usd(r.gastado_usd)} en ${r.generaciones} ${r.generaciones === 1 ? "generación" : "generaciones"}` : "Sin gasto registrado"}</small></div>
-        <div class="acciones"><button type="button" class="principal" data-generar="${esc(r.ruta)}" ${puede ? "" : "disabled"} ${motivo ? `title="${esc(motivo)}"` : ""}>${r.salidas.some(s => !s.hoja) ? "Generar otra versión…" : "Generar…"}</button></div>
-      </div>
-    </div>
-    <details class="detalle" ${abierto.has(r.ruta) ? "open" : ""} data-detalle="${esc(r.ruta)}">
-      <summary>Prompt y resultados (${r.salidas.length})</summary>
-      <div class="cuerpo"><div class="prompt">${esc(r.prompt)}</div>
-      ${salidas ? `<div class="salidas">${salidas}</div>` : `<p class="vacio">Todavía no hay resultados.</p>`}
-      <div class="resultado-accion" aria-live="polite"></div></div>
-    </details>
-  </article>`;
+  if (estado.trabajo && estado.trabajo.estado === "en curso") sondeo = setTimeout(cargar, 3000);
 }
 
 function pintarTrabajo(t) {
@@ -210,62 +214,245 @@ function pintarTrabajo(t) {
   caja.hidden = false;
   caja.className = "trabajo " + (t.estado === "en curso" ? "en-curso" : t.estado);
   const seg = Math.round(((t.fin || Date.now() / 1000) - t.inicio));
-  const titulo = t.estado === "en curso" ? `Generando ${t.receta} · ${seg} s` : t.estado === "listo"
-    ? `Listo: ${t.receta} · costo real ${usd(t.resultado && t.resultado.costo_usd)}` : `No se generó ${t.receta}`;
+  const costo = t.resultado && t.resultado.costo_usd != null ? ` · costo real ${usd(t.resultado.costo_usd)}` : "";
+  const titulo = t.estado === "en curso" ? `En curso: ${t.receta} · ${seg} s` : t.estado === "listo" ? `Listo: ${t.receta}${costo}` : `No se completó: ${t.receta}`;
   caja.innerHTML = `<strong>${esc(titulo)}</strong>${t.error ? `<p class="error-texto">${esc(t.error)}</p>` : ""}<pre>${esc(t.log.join("\n"))}</pre>`;
 }
+const ocupado = () => estado.trabajo && estado.trabajo.estado === "en curso";
 
+/* ---------- Producción ---------- */
+async function cargarProduccion() {
+  try { prod = await api("/api/produccion?id=" + encodeURIComponent(actual)); }
+  catch (e) { $("vista").innerHTML = `<p class="error-texto">${esc(e.message)}</p>`; return; }
+  recarga = Date.now();
+  pintarProduccion();
+}
+
+function hueco(ruta, etiqueta, datos, alt) {
+  return `<label class="hueco" title="Toca para subir o reemplazar">${ruta ? `<img src="${archivo(ruta, recarga)}" alt="${esc(alt)}" loading="lazy">` : `Subir<br>${esc(etiqueta)}`}
+    ${ruta ? `<small>${esc(etiqueta)}</small>` : ""}<input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Subir ${esc(etiqueta)}" ${datos}></label>`;
+}
+
+function pintarProduccion() {
+  const p = prod, r = p.resumen;
+  const personajes = p.personajes.map(c => `<article class="personaje">
+      <h3>${esc(c.nombre)} <code>${esc(c.id)}</code> <span class="chip ${esc(c.estado)}">${esc(ETIQ[c.estado] || c.estado)}</span></h3>
+      <p class="meta">${esc(c.descripcion)}</p>${c.nota ? `<p class="error-texto">Nota: ${esc(c.nota)}</p>` : ""}
+      <div class="vistas">${c.vistas.map(v => hueco(c.referencias_archivos[v], v, `data-subir-ref="${esc(c.id)}" data-vista="${esc(v)}"`, `${c.nombre} ${v}`)).join("")}</div>
+      <div class="fila"><button type="button" class="chico ok" data-personaje="${esc(c.id)}" data-decision="aprobar_personaje">Aprobar personaje</button>
+      <button type="button" class="chico mal" data-personaje="${esc(c.id)}" data-decision="cambios_personaje">Pedir cambios</button></div></article>`).join("");
+  const secuencias = p.secuencias.map(s => {
+    const tomas = s.tomas.filter(t => !soloPendiente || t.imagenes.some(i => i.estado !== "aprobada") || t.variantes.some(v => v.estado !== "aprobada"));
+    if (!tomas.length) return "";
+    return `<section class="secuencia"><h2>${esc(s.id)} · ${esc(s.titulo)}</h2>${s.descripcion ? `<p>${esc(s.descripcion)}</p>` : ""}${tomas.map(t => toma(t)).join("")}</section>`;
+  }).join("");
+  $("vista").innerHTML = `
+    <section class="banda"><h2>${esc(p.titulo)}</h2>${p.descripcion ? `<p>${esc(p.descripcion)}</p>` : ""}
+      <div class="contadores">
+        <div><strong>${r.personajes_aprobados}/${p.personajes.length}</strong><span>Personajes aprobados</span></div>
+        <div><strong>${r.imagenes_aprobadas}/${r.imagenes}</strong><span>Imágenes aprobadas</span></div>
+        <div><strong>${r.clips_aprobados}/${r.clips}</strong><span>Clips aprobados</span></div>
+        <div><strong>${r.por_revisar}</strong><span>Por revisar</span></div>
+        <div><strong>${usd(r.gastado_usd)}</strong><span>Gastado en video</span></div>
+      </div></section>
+    ${p.faltan_imagenes ? `<div class="siguiente"><strong>Siguiente:</strong> faltan ${p.faltan_imagenes} imágenes (${esc(p.siguiente.slice(0, 6).join(", "))}${p.faltan_imagenes > 6 ? "…" : ""}). Súbelas aquí o pide a un agente que las genere con <code>estudio produccion estado</code>.</div>`
+      : r.por_revisar ? `<div class="siguiente"><strong>Siguiente:</strong> hay ${r.por_revisar} piezas por revisar.</div>` : ""}
+    <details class="bloque" ${abierto.has("guion") ? "open" : ""} data-bloque="guion"><summary>00 · Guion</summary><div>${p.guion ? `<div class="guion">${esc(p.guion)}</div>` : `<p class="vacio">Sin guion.md en la producción.</p>`}
+      ${p.estilo ? `<p class="subt">Estilo común</p><div class="prompt">${esc(p.estilo)}</div>` : ""}
+      <p class="meta">Video: ${esc(p.video.modelo)} · ${esc(p.video.resolucion || "")} · ${esc(p.video.formato || "")} · audio ${p.video.audio ? "sí" : "no"} · tope por clip ${usd(p.video.max_usd_clip)}</p></div></details>
+    <details class="bloque" ${abierto.has("personajes") || !abierto.size ? "open" : ""} data-bloque="personajes"><summary>01 · Personajes · referencias y aprobación</summary><div>
+      ${p.personajes.length ? `<p class="meta">Una referencia nueva regresa el personaje a «por revisar». Las descripciones se agregan a los prompts de cada toma donde aparece.</p><div class="personajes">${personajes}</div>` : `<p class="vacio">Esta producción no tiene personajes.</p>`}</div></details>
+    <details class="bloque" ${abierto.has("animatica") ? "open" : ""} data-bloque="animatica"><summary>02 · Animática · corte preliminar</summary><div>
+      <p class="meta">En orden del guion: el clip aprobado de cada toma (el marcado para el corte o el primero aprobado), recortado a su duración; si no hay clip, su imagen aprobada fija; si tampoco, negro. No gasta saldo.</p>
+      <button type="button" class="principal" id="armar-animatica" ${ocupado() || !estado.ffmpeg ? "disabled" : ""}>${p.animatica ? "Volver a armar la animática" : "Armar animática"}</button>
+      ${p.animatica ? `<video src="${archivo(p.animatica, recarga)}" controls preload="metadata" style="width:100%;max-height:420px;background:#000;border-radius:10px;margin-top:12px"></video><p><a href="${archivo(p.animatica)}" download>Descargar animática</a></p>` : ""}</div></details>
+    <div class="filtros-prod"><label><input type="checkbox" id="solo-pendiente" ${soloPendiente ? "checked" : ""}> Solo tomas con algo pendiente</label>
+      <label><input type="checkbox" id="ver-prompts" ${verPrompts ? "checked" : ""}> Mostrar prompts</label></div>
+    <div class="${verPrompts ? "" : "oculto-prompt"}">${secuencias || `<p class="vacio">No hay tomas con pendientes.</p>`}</div>`;
+}
+
+function toma(t) {
+  const imgs = t.imagenes.map(i => `<div class="img-toma">
+      ${hueco(i.archivo, "imagen " + i.id, `data-subir-toma="${esc(t.id)}" data-imagen="${esc(i.id)}"`, `Toma ${t.id} imagen ${i.id}`)}
+      <div class="info"><div class="fila"><strong>${esc(i.id)}</strong><span class="chip ${esc(i.estado)}">${esc(ETIQ[i.estado] || i.estado)}</span>${i.versiones ? `<span class="meta">${i.versiones} ant.</span>` : ""}</div>
+      <span>${esc(i.prompt)}</span>${i.nota ? `<span class="error-texto">Nota: ${esc(i.nota)}</span>` : ""}
+      <div class="prompt">${esc(i.prompt_completo)}</div>
+      <div class="fila"><button type="button" class="chico" data-copiar="${esc(i.prompt_completo)}">Copiar prompt</button>
+      ${i.estado === "pendiente" || i.estado === "aprobada" ? `<button type="button" class="chico ok" data-grupo="imagenes" data-clave="${esc(t.id + "/" + i.id)}" data-decision="aprobar" ${i.estado === "aprobada" ? "disabled" : ""}>Aprobar</button>
+      <button type="button" class="chico mal" data-grupo="imagenes" data-clave="${esc(t.id + "/" + i.id)}" data-decision="descartar">Descartar</button>` : ""}</div></div></div>`).join("");
+  const opciones = (sel, vacio) => `${vacio ? `<option value="">${vacio}</option>` : ""}${t.imagenes.map(i => `<option value="${esc(i.id)}" ${sel === i.id ? "selected" : ""}>Imagen ${esc(i.id)}</option>`).join("")}`;
+  const mini = id => { const i = t.imagenes.find(x => x.id === id); return `<div class="mini">${i && i.archivo ? `<img src="${archivo(i.archivo, recarga)}" alt="">` : id ? `Imagen ${esc(id)} sin archivo` : "—"}</div>`; };
+  const vars = t.variantes.map(v => {
+    const supera = v.estimado_usd != null && v.estimado_usd > v.max_usd;
+    const motivo = ocupado() ? "Hay un trabajo en curso" : v.faltas.length ? "Antes: " + v.faltas.join("; ") : supera ? "El estimado supera el tope por clip" : "";
+    const k = esc(t.id + "/" + v.id);
+    return `<div class="variante ${v.en_corte ? "corte" : ""}">
+      <div class="fila"><strong>Variante ${esc(v.id)}</strong><span class="chip ${esc(v.estado)}">${esc(v.estado === "falta" ? "Sin clip" : ETIQ[v.estado] || v.estado)}</span>
+        ${v.en_corte ? `<span class="chip ok">En el corte</span>` : ""}${v.versiones ? `<span class="meta">${v.versiones} ant.</span>` : ""}</div>
+      <div class="cuadros"><label>Primer cuadro<select data-var="${k}" data-campo="primer">${opciones(v.primer, "— sin imagen —")}</select>${mini(v.primer)}</label>
+        <label>Último cuadro<select data-var="${k}" data-campo="ultimo">${opciones(v.ultimo, "— ninguno —")}</select>${mini(v.ultimo)}</label></div>
+      <label class="meta">Movimiento<textarea data-var="${k}" data-campo="movimiento">${esc(v.movimiento)}</textarea></label>
+      <div class="prompt">${esc(v.prompt_completo)}</div>
+      ${v.archivo ? `<video src="${archivo(v.archivo, recarga)}" controls preload="metadata" aria-label="Clip ${k}"></video>` : ""}
+      ${v.nota ? `<p class="error-texto">Nota: ${esc(v.nota)}</p>` : ""}
+      <p class="costo">Genera ${esc(v.duracion_generada)} s (la toma usa ${esc(t.duracion)} s) · estimado ${usd(v.estimado_usd)} · tope ${usd(v.max_usd)}${v.costo_usd != null ? ` · costó ${usd(v.costo_usd)}` : ""}</p>
+      ${v.faltas.length ? `<p class="error-texto">Antes de generar: ${esc(v.faltas.join("; "))}</p>` : supera ? `<p class="error-texto">El estimado supera el tope por clip de la producción.</p>` : ""}
+      <div class="fila"><button type="button" class="principal chico" data-generar-var="${k}" ${motivo ? `disabled title="${esc(motivo)}"` : ""}>${v.archivo ? "Generar otra versión…" : "Generar…"}</button>
+      ${v.archivo ? `<button type="button" class="chico ok" data-grupo="clips" data-clave="${k}" data-decision="aprobar" ${v.estado === "aprobada" ? "disabled" : ""}>Aprobar</button>
+        <button type="button" class="chico mal" data-grupo="clips" data-clave="${k}" data-decision="descartar">Descartar</button>
+        ${v.estado === "aprobada" && !v.en_corte ? `<button type="button" class="chico" data-corte="${k}">Usar en el corte</button>` : ""}
+        <button type="button" class="chico" data-revisar="${esc(v.archivo)}">Revisar</button><a href="${archivo(v.archivo)}" download>Descargar</a>` : ""}</div>
+      <div class="resultado-accion" aria-live="polite"></div></div>`;
+  }).join("");
+  return `<article class="toma" id="toma-${esc(t.id)}"><div class="toma-cab"><span class="num">#${esc(t.id)}</span><h3>${esc(t.titulo)}</h3>
+      <span class="meta">${esc(t.duracion)} s${t.personajes.length ? " · " + esc(t.personajes.join(", ")) : ""}</span></div>
+    ${t.descripcion ? `<p>${esc(t.descripcion)}</p>` : ""}
+    <p class="subt">Imágenes</p>${imgs ? `<div class="imagenes">${imgs}</div>` : `<p class="vacio">Sin imágenes definidas.</p>`}
+    <p class="subt">Video · variantes</p>${vars ? `<div class="variantes">${vars}</div>` : `<p class="vacio">Sin variantes definidas.</p>`}</article>`;
+}
+
+/* ---------- Recetas sueltas ---------- */
+function estadoReceta(r) {
+  if (r.error) return ["error", "Receta con error"];
+  if (r.espera) return ["alerta", "Espera toma anterior"];
+  const videos = r.salidas.filter(s => !s.hoja);
+  if (videos.length) return ["ok", videos.length === 1 ? "Generada" : `${videos.length} versiones`];
+  return ["", "Sin generar"];
+}
+function pintarRecetas() {
+  const q = ($("buscar")?.value || "").trim().toLowerCase(), soloPend = $("solo-pendientes")?.checked;
+  const recetas = estado.recetas;
+  const pendientes = recetas.filter(r => !r.salidas.some(s => !s.hoja));
+  const visibles = recetas.filter(r => (!soloPend || pendientes.includes(r)) && (!q || [r.nombre, r.ruta, r.prompt].some(x => String(x || "").toLowerCase().includes(q))));
+  const grupos = {};
+  for (const r of visibles) (grupos[r.ruta.includes("/") ? r.ruta.slice(0, r.ruta.lastIndexOf("/")) : "."] ??= []).push(r);
+  const avisos = [];
+  if (estado.catalogo) avisos.push("Sin catálogo de precios: " + estado.catalogo + ". No habrá estimados.");
+  const lista = !recetas.length ? `<p class="vacio">No hay recetas sueltas en esta carpeta. Una receta es un JSON con «nombre» y «prompt» (ver ejemplos/).</p>`
+    : !visibles.length ? `<p class="vacio">Ninguna receta coincide.</p>`
+    : Object.entries(grupos).map(([g, rs]) => `<section class="grupo"><h2>${esc(g)}/</h2>${rs.map(tarjeta).join("")}</section>`).join("");
+  const enfoque = document.activeElement && document.activeElement.id;
+  $("vista").innerHTML = `${avisos.map(a => `<p class="error-texto">${esc(a)}</p>`).join("")}
+    <section class="resumen" aria-label="Resumen">
+      <div class="dato"><span>Recetas</span><strong>${recetas.length}</strong></div>
+      <div class="dato"><span>Sin generar</span><strong>${pendientes.length}</strong></div>
+      <div class="dato"><span>Gastado (registro)</span><strong>${usd(recetas.reduce((a, r) => a + r.gastado_usd, 0))}</strong></div>
+      <div class="dato"><span>Estimado pendiente</span><strong>${usd(pendientes.reduce((a, r) => a + (r.estimado_usd || 0), 0))}</strong></div></section>
+    <div class="filtros"><input type="search" id="buscar" placeholder="Buscar por nombre, ruta o prompt" aria-label="Buscar recetas" value="${esc(q)}">
+      <label><input type="checkbox" id="solo-pendientes" ${soloPend ? "checked" : ""}> Solo sin generar</label></div>${lista}`;
+  if (enfoque === "buscar") { const b = $("buscar"); b.focus(); b.setSelectionRange(b.value.length, b.value.length); }
+}
+function tarjeta(r) {
+  const [clase, texto] = estadoReceta(r);
+  const supera = r.estimado_usd != null && r.max_usd != null && r.estimado_usd > r.max_usd;
+  const puede = !r.error && !r.espera && !ocupado() && !supera;
+  const motivo = r.error ? "La receta tiene un error" : r.espera ? r.espera : ocupado() ? "Hay un trabajo en curso" : supera ? "El estimado supera el tope" : "";
+  const salidas = r.salidas.map(s => `<figure class="salida">${s.tipo === "video" ? `<video src="${archivo(s.ruta)}" controls preload="metadata" aria-label="${esc(s.nombre)}"></video>` : `<img src="${archivo(s.ruta)}" alt="${esc(s.nombre)}" loading="lazy">`}
+      <div><span>${esc(s.nombre)} · ${(s.bytes / 1048576).toFixed(1)} MB</span>${s.tipo === "video" ? `<button type="button" class="chico" data-revisar="${esc(s.ruta)}">Revisar</button><button type="button" class="chico" data-ultimo="${esc(s.ruta)}">Último cuadro</button>` : ""}<a href="${archivo(s.ruta)}" download>Descargar</a></div></figure>`).join("");
+  return `<article class="receta"><div class="cabeza"><div>
+      <div class="titulo"><h3>${esc(r.nombre)}</h3><span class="chip ${clase}">${texto}</span></div>
+      <div class="meta">${esc(r.tipo)} · ${esc(r.modelo || "sin modelo")}${r.duracion ? ` · ${esc(r.duracion)} s` : ""}${r.continuar_de ? ` · continúa de ${esc(r.continuar_de)}` : ""}</div>
+      ${r.error ? `<p class="error-texto">${esc(r.error)}</p>` : supera ? `<p class="error-texto">El estimado (${usd(r.estimado_usd)}) supera el tope de la receta (${usd(r.max_usd)}): sube «max_usd» o baja la duración.</p>` : ""}</div>
+    <div><div class="costos">Estimado ${usd(r.estimado_usd)} · tope ${usd(r.max_usd)}<small>${r.generaciones ? `Gastado ${usd(r.gastado_usd)} en ${r.generaciones} ${r.generaciones === 1 ? "generación" : "generaciones"}` : "Sin gasto registrado"}</small></div>
+      <div class="acciones"><button type="button" class="principal" data-generar="${esc(r.ruta)}" ${puede ? "" : "disabled"} ${motivo ? `title="${esc(motivo)}"` : ""}>${r.salidas.some(s => !s.hoja) ? "Generar otra versión…" : "Generar…"}</button></div></div></div>
+    <details class="detalle" ${abierto.has(r.ruta) ? "open" : ""} data-detalle="${esc(r.ruta)}"><summary>Prompt y resultados (${r.salidas.length})</summary>
+      <div class="cuerpo"><div class="prompt" style="display:block">${esc(r.prompt)}</div>${salidas ? `<div class="salidas">${salidas}</div>` : `<p class="vacio">Todavía no hay resultados.</p>`}
+      <div class="resultado-accion" aria-live="polite"></div></div></details></article>`;
+}
+
+/* ---------- Saldo y aprobación de gasto ---------- */
 async function consultarSaldo() {
   $("ver-saldo").disabled = true; $("saldo").textContent = "…";
   try { saldo = (await api("/api/saldo", {})).saldo_usd; $("saldo").textContent = "$" + saldo.toFixed(3); anunciar("Saldo " + saldo.toFixed(2)); }
-  catch (e) { saldo = null; $("saldo").textContent = "—"; $("avisos").insertAdjacentHTML("beforeend", `<p>${esc(e.message)}</p>`); }
+  catch (e) { saldo = null; $("saldo").textContent = "—"; aviso(e.message); }
   finally { $("ver-saldo").disabled = false; }
   return saldo;
 }
-
-async function abrirDialogo(ruta) {
-  const r = estado.recetas.find(x => x.ruta === ruta); if (!r) return;
-  const sinEstimado = r.estimado_usd == null;
-  const aprobado = sinEstimado ? Number(r.max_usd) : r.estimado_usd;
-  $("d-titulo").textContent = "Generar " + r.nombre;
-  $("d-ruta").textContent = r.ruta;
+let pedido = null;
+async function abrirDialogo(datos) {
+  pedido = datos;
+  const sinEstimado = datos.estimado == null;
+  const aprobado = sinEstimado ? Number(datos.tope) : datos.estimado;
+  pedido.aprobado = aprobado; pedido.sinEstimado = sinEstimado;
+  $("d-titulo").textContent = datos.titulo; $("d-ruta").textContent = datos.ruta;
   $("d-error").hidden = true; $("d-aprobar").checked = false; $("d-generar").disabled = true;
   $("d-texto-aprobar").textContent = sinEstimado
-    ? `Este modelo no tiene estimado. Apruebo gastar en esta toma, una sola vez, con el tope de ${usd(r.max_usd)} de la receta y el riesgo de que el precio real difiera.`
+    ? `Este modelo no tiene estimado. Apruebo gastar en esta toma, una sola vez, con el tope de ${usd(datos.tope)} y el riesgo de que el precio real difiera.`
     : `Apruebo gastar hasta ${usd(aprobado)} en esta toma, una sola vez. Un reintento con costo necesita otra aprobación.`;
-  const filas = (s) => [["Modelo", r.modelo], ["Tipo", r.tipo], ["Duración", r.duracion ? r.duracion + " s" : "—"],
-    ["Estimado", usd(r.estimado_usd)], ["Tope de la receta", usd(r.max_usd)], ["Saldo", s === undefined ? "consultando…" : s == null ? "no disponible" : "$" + s.toFixed(3)],
-    ...(r.continuar_de ? [["Continúa de", r.continuar_de]] : [])].map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join("");
+  const filas = s => [...datos.filas, ["Estimado", usd(datos.estimado)], ["Tope", usd(datos.tope)], ["Saldo", s === undefined ? "consultando…" : s == null ? "no disponible" : "$" + s.toFixed(3)]]
+    .map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join("");
   $("d-filas").innerHTML = filas(undefined);
-  $("dialogo").returnValue = ""; $("dialogo").showModal();
-  $("dialogo").dataset.ruta = ruta; $("dialogo").dataset.huella = r.huella;
-  $("dialogo").dataset.aprobado = aprobado; $("dialogo").dataset.sinEstimado = sinEstimado;
+  $("dialogo").showModal();
   const s = await consultarSaldo();
   $("d-filas").innerHTML = filas(s);
   if (s == null) { $("d-error").textContent = "No se pudo consultar el saldo. Revisa que ComfyUI esté abierto."; $("d-error").hidden = false; }
-  else if (!sinEstimado && r.estimado_usd > s) { $("d-error").textContent = "El estimado supera el saldo disponible."; $("d-error").hidden = false; }
+  else if (!sinEstimado && datos.estimado > s) { $("d-error").textContent = "El estimado supera el saldo disponible."; $("d-error").hidden = false; }
 }
-
 $("d-aprobar").addEventListener("change", e => { $("d-generar").disabled = !e.target.checked || !$("d-error").hidden; });
 $("d-generar").addEventListener("click", async () => {
-  const d = $("dialogo");
   $("d-generar").disabled = true;
   try {
-    await api("/api/generar", {receta: d.dataset.ruta, huella: d.dataset.huella, aprobado_usd: Number(d.dataset.aprobado),
-      sin_estimado: d.dataset.sinEstimado === "true", confirmacion: $("d-aprobar").checked});
-    d.close(); anunciar("Generación iniciada"); cargar();
+    await api(pedido.ruta_api, {...pedido.cuerpo, aprobado_usd: pedido.aprobado, sin_estimado: pedido.sinEstimado, confirmacion: $("d-aprobar").checked});
+    $("dialogo").close(); anunciar("Generación iniciada"); cargar();
   } catch (e) { $("d-error").textContent = e.message; $("d-error").hidden = false; }
 });
 
+let notaPendiente = null;
+function pedirNota(titulo, accion) {
+  notaPendiente = accion; $("n-titulo").textContent = titulo; $("n-texto").value = ""; $("nota").showModal(); $("n-texto").focus();
+}
+$("n-ok").addEventListener("click", async () => {
+  const texto = $("n-texto").value.trim();
+  if (!texto) { $("n-texto").focus(); return; }
+  $("nota").close();
+  try { await notaPendiente(texto); } catch (e) { aviso(e.message); }
+});
+
+async function accion(datos) { await api("/api/produccion/accion", {id: actual, ...datos}); await cargarProduccion(); }
+
+/* ---------- Eventos ---------- */
 document.addEventListener("click", async e => {
-  const g = e.target.closest("[data-generar]"); if (g) return abrirDialogo(g.dataset.generar);
+  const tab = e.target.closest("[data-tab]");
+  if (tab) { actual = tab.dataset.tab; location.hash = encodeURIComponent(actual); return cargar(); }
+  const g = e.target.closest("[data-generar]");
+  if (g) {
+    const r = estado.recetas.find(x => x.ruta === g.dataset.generar);
+    return abrirDialogo({titulo: "Generar " + r.nombre, ruta: r.ruta, estimado: r.estimado_usd, tope: r.max_usd,
+      filas: [["Modelo", r.modelo], ["Duración", r.duracion ? r.duracion + " s" : "—"], ...(r.continuar_de ? [["Continúa de", r.continuar_de]] : [])],
+      ruta_api: "/api/generar", cuerpo: {receta: r.ruta, huella: r.huella}});
+  }
+  const gv = e.target.closest("[data-generar-var]");
+  if (gv) {
+    const [tid, vid] = gv.dataset.generarVar.split("/");
+    const t = prod.secuencias.flatMap(s => s.tomas).find(x => x.id === tid), v = t.variantes.find(x => x.id === vid);
+    return abrirDialogo({titulo: `Generar toma ${tid} · variante ${vid}`, ruta: `${prod.titulo} · ${t.titulo}`, estimado: v.estimado_usd, tope: v.max_usd,
+      filas: [["Modelo", prod.video.modelo], ["Duración generada", v.duracion_generada + " s"], ["Primer cuadro", v.primer ? "imagen " + v.primer : "—"], ["Último cuadro", v.ultimo ? "imagen " + v.ultimo : "—"]],
+      ruta_api: "/api/produccion/generar", cuerpo: {id: actual, toma: tid, variante: vid, huella: v.huella}});
+  }
+  const d = e.target.closest("[data-decision]");
+  if (d) {
+    if (d.dataset.personaje) {
+      if (d.dataset.decision === "cambios_personaje") return pedirNota("Pedir cambios a " + d.dataset.personaje, nota => accion({accion: "cambios_personaje", personaje: d.dataset.personaje, nota}));
+      return accion({accion: "aprobar_personaje", personaje: d.dataset.personaje}).catch(err => aviso(err.message));
+    }
+    if (d.dataset.decision === "descartar") return pedirNota("Descartar " + d.dataset.clave, nota => accion({accion: "descartar", grupo: d.dataset.grupo, clave: d.dataset.clave, nota}));
+    return accion({accion: "aprobar", grupo: d.dataset.grupo, clave: d.dataset.clave}).catch(err => aviso(err.message));
+  }
+  const c = e.target.closest("[data-corte]");
+  if (c) { const [toma, variante] = c.dataset.corte.split("/"); return accion({accion: "corte", toma, variante}).catch(err => aviso(err.message)); }
+  const cp = e.target.closest("[data-copiar]");
+  if (cp) { try { await navigator.clipboard.writeText(cp.dataset.copiar); cp.textContent = "Copiado"; } catch { aviso("No se pudo copiar; usa «Mostrar prompts» y selecciona el texto."); } return; }
+  if (e.target.id === "armar-animatica") {
+    try { await api("/api/produccion/animatica", {id: actual}); anunciar("Armando animática"); cargar(); } catch (err) { aviso(err.message); }
+    return;
+  }
   const b = e.target.closest("[data-revisar],[data-ultimo]"); if (!b) return;
-  const caja = b.closest(".cuerpo").querySelector(".resultado-accion");
+  const caja = b.closest(".cuerpo, .variante").querySelector(".resultado-accion");
   b.disabled = true; caja.textContent = "Procesando…";
   try {
     if (b.dataset.revisar) {
       const r = await api("/api/revisar", {archivo: b.dataset.revisar});
-      caja.innerHTML = `<p>${esc(r.info)}<br>Errores: ${esc(r.errores || "ninguno")} · Silencios: ${esc(JSON.stringify(r.silencios) || "ninguno")}<br><em>${esc(r.aviso)}</em></p><img src="${archivo(r.hoja)}" alt="Hoja de cuadros" style="max-width:100%">`;
+      caja.innerHTML = `<p class="meta">${esc(r.info)}<br>Errores: ${esc(r.errores || "ninguno")} · Silencios: ${esc(JSON.stringify(r.silencios) || "ninguno")}<br><em>${esc(r.aviso)}</em></p><img src="${archivo(r.hoja, Date.now())}" alt="Hoja de cuadros" style="max-width:100%">`;
     } else {
       const r = await api("/api/ultimo-cuadro", {archivo: b.dataset.ultimo});
       caja.innerHTML = `<p>Guardado: ${esc(r.imagen)}</p><img src="${archivo(r.imagen)}" alt="Último cuadro" style="max-width:100%">`;
@@ -273,11 +460,31 @@ document.addEventListener("click", async e => {
   } catch (err) { caja.innerHTML = `<p class="error-texto">${esc(err.message)}</p>`; }
   finally { b.disabled = false; }
 });
-document.addEventListener("toggle", e => { const d = e.target; if (d.dataset && d.dataset.detalle) d.open ? abierto.add(d.dataset.detalle) : abierto.delete(d.dataset.detalle); }, true);
+
+document.addEventListener("change", async e => {
+  const f = e.target.closest("input[type=file]");
+  if (f && f.files[0]) {
+    const q = f.dataset.subirRef ? `personaje=${encodeURIComponent(f.dataset.subirRef)}&vista=${encodeURIComponent(f.dataset.vista)}`
+      : `toma=${encodeURIComponent(f.dataset.subirToma)}&imagen=${encodeURIComponent(f.dataset.imagen)}`;
+    try { await api(`/api/produccion/subir?id=${encodeURIComponent(actual)}&${q}`, null, f.files[0]); anunciar("Imagen subida"); await cargarProduccion(); }
+    catch (err) { aviso(err.message); }
+    return;
+  }
+  if (e.target.matches("select[data-var]")) {
+    const [toma, variante] = e.target.dataset.var.split("/");
+    return accion({accion: "variante", toma, variante, [e.target.dataset.campo]: e.target.value}).catch(err => { aviso(err.message); cargarProduccion(); });
+  }
+  if (e.target.matches("textarea[data-var]")) {
+    const [toma, variante] = e.target.dataset.var.split("/");
+    return accion({accion: "variante", toma, variante, movimiento: e.target.value}).catch(err => aviso(err.message));
+  }
+  if (e.target.id === "solo-pendiente") { soloPendiente = e.target.checked; return pintarProduccion(); }
+  if (e.target.id === "ver-prompts") { verPrompts = e.target.checked; return pintarProduccion(); }
+  if (e.target.id === "solo-pendientes") return pintarRecetas();
+});
+document.addEventListener("input", e => { if (e.target.id === "buscar") pintarRecetas(); });
+document.addEventListener("toggle", e => { const d = e.target, k = d.dataset && (d.dataset.detalle || d.dataset.bloque); if (k) d.open ? abierto.add(k) : abierto.delete(k); }, true);
 $("ver-saldo").addEventListener("click", consultarSaldo);
-$("recargar").addEventListener("click", cargar);
-$("buscar").addEventListener("input", pintar);
-$("solo-pendientes").addEventListener("change", pintar);
 cargar();
 </script>
 </body>
