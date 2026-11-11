@@ -7,7 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import costos, generacion, limpieza, receta
+from . import costos, generacion, limpieza, produccion, receta
 from .comfy import Cliente, ErrorComfy
 
 
@@ -45,6 +45,34 @@ def cmd_generar(args):
         return args.si or input("¿Generar y gastar? Escribe sí: ").strip().lower() in ("si", "sí")
     generacion.generar(args.receta, _cliente(args), confirmar, sin_estimado=args.sin_estimado,
                        limite=args.limite, avisar=lambda t: print(t, flush=True))
+
+
+def cmd_produccion(args):
+    if args.accion == "nueva":
+        ruta = produccion.crear(args.carpeta, args.titulo)
+        print("Creada:", ruta)
+        print("Edita produccion.json (estilo, personajes, secuencias y tomas) y guion.md; luego abre `estudio panel`.")
+        return
+    prod = produccion.Produccion(args.carpeta)
+    if args.accion == "animatica":
+        prod.animatica()
+        return
+    try:
+        catalogo = costos.catalogo()
+    except FileNotFoundError:
+        catalogo = None
+    v = prod.vista(catalogo)
+    r = v["resumen"]
+    print(f"{v['titulo']}: personajes aprobados {r['personajes_aprobados']}/{len(v['personajes'])}, "
+          f"imágenes {r['imagenes_aprobadas']}/{r['imagenes']}, clips {r['clips_aprobados']}/{r['clips']}, "
+          f"por revisar {r['por_revisar']}, gastado ${r['gastado_usd']:.2f}")
+    for s in v["secuencias"]:
+        for t in s["tomas"]:
+            for im in t["imagenes"]:
+                if im["estado"] == "falta":
+                    print(f"\n[falta] imagenes/{t['id']}-{im['id']}.png")
+                    print(im["prompt_completo"])
+    print("\nGuarda cada imagen con ese nombre (PNG, JPG o WebP); el panel la mostrará como pendiente de revisión.")
 
 
 def cmd_panel(args):
@@ -131,6 +159,11 @@ def main(argv=None):
     w.add_argument("--nombre", default="video")
     w.add_argument("--blanco", action="store_true", help="Empuja el casi blanco a blanco puro")
     w.set_defaults(f=cmd_web)
+    pr = sub.add_parser("produccion", help="Producciones: crear una nueva, ver qué falta o armar la animática")
+    pr.add_argument("accion", choices=["nueva", "estado", "animatica"])
+    pr.add_argument("carpeta")
+    pr.add_argument("--titulo")
+    pr.set_defaults(f=cmd_produccion)
     pa = sub.add_parser("panel", help="Panel local para ver recetas, costos y resultados, y generar con aprobación")
     pa.add_argument("carpeta", nargs="?", default=".", help="Carpeta con recetas (por defecto, la actual)")
     pa.add_argument("--puerto", type=int, default=4300)
@@ -145,7 +178,7 @@ def main(argv=None):
         sys.exit(f"Error de ffmpeg: {(e.stderr or '').strip()[:500] or e}")
     except generacion.ErrorGeneracion as e:
         sys.exit(str(e))
-    except (ErrorComfy, receta.ErrorReceta, ValueError, FileNotFoundError, TimeoutError) as e:
+    except (ErrorComfy, receta.ErrorReceta, produccion.ErrorProduccion, ValueError, FileNotFoundError, TimeoutError) as e:
         sys.exit(f"Error: {e}")
 
 
