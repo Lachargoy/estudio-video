@@ -19,3 +19,6 @@ estudio = "estudio_video.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+estudio_video = ["static/*.html"]

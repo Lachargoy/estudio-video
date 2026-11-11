@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estudio · tablero</title>
+<style>
+:root{
+  --papel:#F9F7F2; --tarjeta:#F1EEE7; --pozo:#E8E3D8; --tinta:#1E2320; --suave:#6F6D66; --linea:#DCD6CA;
+  --selva:#1B2922; --barro:#C2652F; --oro:#F2B04B;
+  --ok:#3E7F57; --ok-s:#DCEBDF; --av:#9A6A12; --av-s:#FBEBD3; --mal:#B4412F; --mal-s:#F6DCD6; --run:#2C5D8A; --run-s:#DCE8F3;
+  --titulo:Georgia,"Times New Roman",serif; --texto:"Helvetica Neue",Arial,system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--papel);color:var(--tinta);font-family:var(--texto);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--barro);outline-offset:2px}
+a{color:var(--barro)}
+.franja{height:8px;background:var(--selva)}
+.envoltura{max-width:1220px;margin:0 auto;padding:0 20px}
+/* Barra superior */
+.superior{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;max-width:1220px;margin:0 auto;padding:10px 20px 0;font-size:13px}
+.superior .marca{font-family:var(--titulo);font-weight:700;font-size:16px}
+.superior .carpeta{font:12px ui-monospace,Menlo,monospace;color:var(--suave);overflow-wrap:anywhere;flex:1;min-width:160px}
+.saldo{display:flex;gap:8px;align-items:center;font-weight:700;color:var(--suave)}
+.saldo b{color:var(--tinta);font-variant-numeric:tabular-nums}
+.pestanas{display:flex;gap:6px;flex-wrap:wrap;max-width:1220px;margin:10px auto 0;padding:0 20px}
+.pestana{border:1px solid var(--linea);background:var(--tarjeta);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700}
+.pestana[aria-selected=true]{background:var(--selva);border-color:var(--selva);color:#fff}
+/* Botones */
+.btn{border:1px solid var(--linea);background:#fff;border-radius:5px;padding:6px 10px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:32px}
+.btn:hover:not(:disabled){border-color:var(--tinta)}
+.btn.prim{background:var(--selva);color:#fff;border-color:var(--selva)}
+.btn.barro{background:var(--barro);color:#fff;border-color:var(--barro)}
+.btn.okb{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn.malb{color:var(--mal);border-color:#E9B8AE}
+.btn.crece{flex:1}
+.btn.grande{min-height:40px;padding:8px 16px;font-size:14px;border-radius:6px}
+.alterna{border:1px solid var(--linea);background:var(--tarjeta);border-radius:6px;padding:7px 11px;font-size:13px;font-weight:700}
+.alterna[aria-pressed=true]{background:var(--selva);color:#fff;border-color:var(--selva)}
+/* Cabecera de producción */
+header.heroe{position:relative;color:#fff;background:linear-gradient(135deg,#22362b,#1B2922 55%,#3a2a1a);border-radius:0 0 10px 10px;margin-top:10px;overflow:hidden}
+header.heroe::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(242,176,75,.18),transparent 70%)}
+.heroe-in{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:24px 20px 20px}
+.pastilla{display:inline-block;background:var(--oro);color:var(--tinta);font-weight:900;font-size:11px;letter-spacing:.06em;padding:6px 10px;border-radius:4px;text-transform:uppercase}
+.heroe h1{font-family:var(--titulo);font-size:clamp(24px,4.4vw,38px);line-height:1.1;margin:12px 0 6px;text-wrap:balance}
+.heroe p{margin:0;color:#E6E1D5;max-width:70ch;font-size:14px}
+.cifras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+.cifra{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:10px 12px}
+.cifra b{display:block;font-size:20px;font-weight:900;font-variant-numeric:tabular-nums}
+.cifra span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#D3CEC2}
+.barra{height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin-top:6px;overflow:hidden}
+.barra i{display:block;height:100%;background:var(--oro)}
+.pildoras{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:12.5px;color:#E6E1D5}
+.pildoras span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:4px 10px;font-variant-numeric:tabular-nums}
+nav.secnav{position:sticky;top:0;z-index:20;background:rgba(249,247,242,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--linea)}
+.secnav .envoltura{display:flex;gap:6px;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:none}
+.secbtn{flex:0 0 auto;border:1px solid var(--linea);background:var(--tarjeta);border-radius:999px;padding:6px 12px 6px 8px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px;white-space:nowrap;text-decoration:none;color:var(--tinta)}
+.secbtn i{width:10px;height:10px;border-radius:50%}
+.secbtn small{font-weight:400;color:var(--suave);font-variant-numeric:tabular-nums}
+.siguiente{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#E5EAE3;border-left:4px solid var(--selva);border-radius:6px;padding:11px 14px;margin:16px 0 4px;font-size:14px}
+.siguiente b{display:block;font-size:11px;letter-spacing:.08em;color:var(--suave)}
+.herramientas{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 6px}
+.aviso{font-size:13px;background:var(--av-s);border:1px solid #EFD3A6;color:#6B4A12;border-radius:6px;padding:9px 12px;margin:12px 0}
+.aviso.mal{background:var(--mal-s);border-color:#E9B8AE;color:var(--mal)}
+details.bloque{background:var(--tarjeta);border-radius:8px;padding:0 16px;margin:12px 0}
+details.bloque>summary{padding:13px 0;font-weight:900;font-size:13px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.cuerpo-bloque{padding-bottom:16px}
+.guia{font-size:13px;color:var(--suave);margin:0 0 12px;max-width:80ch}
+.guion{background:var(--papel);border:1px solid var(--linea);border-radius:6px;padding:14px 18px;max-width:80ch;font-size:14.5px;white-space:pre-wrap;max-height:520px;overflow:auto}
+.campo{font-size:11px;font-weight:700;color:var(--suave);margin:10px 0 3px;letter-spacing:.04em;text-transform:uppercase}
+.texto-campo{font-size:12.5px;background:var(--pozo);border-radius:4px;padding:6px 8px;line-height:1.4;white-space:pre-wrap}
+.personajes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.personaje{background:var(--papel);border:1px solid var(--linea);border-radius:8px;padding:12px}
+.personaje.aprobado{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok)}
+.pcab{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pcab h4{margin:0;font-size:15px}
+.pcab code{font:700 12px ui-monospace,Menlo,monospace}
+.refs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.ref{border:1px solid var(--linea);border-radius:5px;overflow:hidden;background:var(--papel)}
+.ref .soltar{aspect-ratio:1}
+.ref>span{display:block;font-size:10px;font-weight:700;text-align:center;padding:3px;color:var(--suave)}
+.fila{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+/* Secuencias y tomas */
+section.secuencia{padding-top:24px;scroll-margin-top:60px}
+.ceja{color:var(--barro);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.secuencia h2{font-weight:900;font-size:clamp(22px,4vw,28px);margin:2px 0;letter-spacing:-.01em;text-transform:uppercase;text-wrap:balance}
+.meta{color:var(--suave);font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+.criterio{background:#E5EAE3;border-left:4px solid var(--c);border-radius:6px;padding:10px 12px;font-size:13.5px;color:#3D3F3A;margin-top:8px}
+article.toma{background:var(--tarjeta);border-radius:8px;border-left:4px solid var(--c);margin:14px 0;padding:16px 16px 18px;scroll-margin-top:60px}
+.tcab{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.tnum{font-weight:900;font-size:26px;color:var(--c);line-height:1;font-variant-numeric:tabular-nums}
+.tcab h3{margin:0;font-size:17px;font-weight:900}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.chip{font-size:11px;font-weight:700;border-radius:4px;padding:3px 7px;background:var(--pozo);color:#4A4943;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.ok{background:var(--ok-s);color:var(--ok)}
+.chip.av{background:var(--av-s);color:var(--av)}
+.chip.mal{background:var(--mal-s);color:var(--mal)}
+.chip.run{background:var(--run-s);color:var(--run)}
+.chip.barro{background:#F6E1D3;color:var(--barro)}
+.uso{font-size:13px;margin:8px 0 0;color:#3D3F3A}
+.uso b{color:var(--barro);font-size:10.5px;letter-spacing:.06em;margin-right:6px}
+.elenco{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;font-size:12px}
+.elenco span{border:1px solid var(--linea);background:var(--papel);border-radius:999px;padding:2px 9px;font-weight:700}
+.rotulo{font-size:11px;font-weight:900;letter-spacing:.08em;color:var(--suave);margin:14px 0 8px;display:flex;justify-content:space-between;gap:8px;text-transform:uppercase}
+.imgs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.tesela{background:var(--papel);border:1px solid var(--linea);border-radius:7px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.tesela.aprobada{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok)}
+.soltar{position:relative;aspect-ratio:16/9;background:repeating-linear-gradient(135deg,#EFEBE2 0 8px,#E9E4D9 8px 16px);display:flex;align-items:center;justify-content:center;text-align:center;color:var(--suave);font-size:11.5px;font-weight:700;width:100%;cursor:pointer;overflow:hidden}
+.soltar.encima{outline:2px dashed var(--barro);outline-offset:-4px}
+.soltar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.soltar input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.soltar:focus-within{outline:2px solid var(--barro);outline-offset:-2px}
+.num{position:absolute;top:6px;left:6px;z-index:2;min-width:22px;height:22px;border-radius:11px;padding:0 6px;color:#fff;background:var(--selva);font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.ocupado::after{content:"Subiendo…";position:absolute;inset:0;background:rgba(249,247,242,.85);display:flex;align-items:center;justify-content:center;color:var(--tinta);font-size:12px;z-index:3}
+.tcuerpo{padding:8px 9px 9px;display:flex;flex-direction:column;gap:6px;flex:1}
+.tdesc{font-size:12.5px;font-weight:700;line-height:1.3}
+.tprompt{font-size:11px;color:#2C3A31;background:var(--pozo);border-radius:4px;padding:6px 7px;line-height:1.35;max-height:6.5em;overflow:auto;white-space:pre-wrap}
+.sin-prompts .tprompt{display:none}
+.nota{font-size:11.5px;color:var(--mal);font-weight:700}
+.tfila{display:flex;gap:5px;margin-top:auto;flex-wrap:wrap}
+.vids{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.vtarjeta{background:var(--papel);border:1px solid var(--linea);border-radius:7px;overflow:hidden;display:flex;flex-direction:column}
+.vtarjeta.corte{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok)}
+.vcab{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border-bottom:1px solid var(--linea)}
+.vcab b{font-size:13px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.vcuerpo{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:10px 11px}
+.cuadros{display:flex;flex-direction:column;gap:6px}
+.miniatura{aspect-ratio:16/9;border-radius:4px;background:var(--pozo) center/cover no-repeat;font-size:10px;color:var(--suave);display:flex;align-items:flex-end;padding:3px 5px;font-weight:700}
+.miniatura.con{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.cuadros select{border:1px solid var(--linea);border-radius:4px;background:#fff;font-size:11.5px;padding:3px 4px;width:100%}
+.cuadros label{font-size:10.5px;font-weight:700;color:var(--suave);display:flex;flex-direction:column;gap:3px}
+.vtexto textarea{width:100%;min-height:62px;border:1px solid var(--linea);border-radius:5px;padding:6px 8px;font-size:12.5px;background:#fff;resize:vertical}
+.clip{position:relative;aspect-ratio:16/9;background:repeating-linear-gradient(135deg,#EFEBE2 0 8px,#E9E4D9 8px 16px);display:flex;align-items:center;justify-content:center;color:var(--suave);font-size:12px;font-weight:700;border-top:1px solid var(--linea)}
+.clip video{position:absolute;inset:0;width:100%;height:100%;background:#000;object-fit:contain}
+.costo{font-size:12px;color:var(--suave);font-variant-numeric:tabular-nums;margin-top:6px}
+.vpie{display:flex;gap:6px;flex-wrap:wrap;padding:9px 11px;border-top:1px solid var(--linea)}
+.animatica video{width:100%;max-height:440px;background:#000;border-radius:8px;margin-top:12px}
+/* Trabajo en curso */
+.trabajo{border-radius:8px;padding:12px 14px;margin:14px 0;border:1px solid var(--linea);background:var(--tarjeta);font-size:14px}
+.trabajo.en-curso{background:var(--run-s);border-color:#B7CDE3}
+.trabajo.listo{background:var(--ok-s);border-color:#B5D3BE}
+.trabajo.error{background:var(--mal-s);border-color:#E9B8AE}
+.trabajo pre{margin:8px 0 0;white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;max-height:150px;overflow:auto}
+/* Recetas sueltas */
+.resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.dato{background:var(--tarjeta);border-radius:8px;padding:10px 12px}
+.dato span{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--suave)}
+.dato b{font-size:20px;font-variant-numeric:tabular-nums}
+.filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.filtros input[type=search]{flex:1;min-width:200px;border:1px solid var(--linea);border-radius:6px;padding:7px 10px;background:#fff}
+.grupo h2{font:700 12px ui-monospace,Menlo,monospace;color:var(--suave);margin:20px 0 8px}
+.receta{background:var(--tarjeta);border-radius:8px;border-left:4px solid var(--selva);margin-bottom:10px}
+.rcab{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:12px 14px;align-items:center}
+.rcab h3{margin:0;font-size:16px;font-weight:900;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.costos{text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.costos small{display:block;color:var(--suave)}
+details.detalle summary{padding:8px 14px;cursor:pointer;color:var(--suave);font-size:13px;font-weight:700}
+.dcuerpo{padding:0 14px 14px}
+.salidas{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:10px}
+.salida{background:var(--papel);border:1px solid var(--linea);border-radius:7px;overflow:hidden;margin:0}
+.salida video,.salida img{display:block;width:100%;max-height:240px;object-fit:contain;background:#000}
+.salida img{background:transparent}
+.salida div{padding:7px 9px;font-size:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.salida div span{flex:1 1 100%;overflow-wrap:anywhere}
+.vacio{color:var(--suave);font-size:14px}
+.error-texto{color:var(--mal);font-size:12.5px;font-weight:700;margin:6px 0 0}
+/* Diálogos */
+dialog{border:0;border-radius:10px;background:var(--papel);color:var(--tinta);padding:0;width:min(520px,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(27,41,34,.55)}
+.dialogo{padding:20px}
+.dialogo h2{margin:0 0 4px;font-family:var(--titulo);font-size:20px}
+.filas{margin:14px 0;border-top:1px solid var(--linea)}
+.filas div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--linea);font-variant-numeric:tabular-nums;font-size:14px}
+.filas dt{color:var(--suave)}.filas dd{margin:0;font-weight:700;text-align:right;overflow-wrap:anywhere}
+.aprobar{display:flex;gap:10px;align-items:flex-start;background:var(--av-s);color:#6B4A12;border:1px solid #EFD3A6;border-radius:6px;padding:12px;margin:12px 0;font-size:14px}
+.aprobar input{width:20px;height:20px;margin-top:1px;flex-shrink:0;accent-color:var(--barro)}
+.pie-dialogo{display:flex;gap:8px;justify-content:flex-end}
+#n-texto{width:100%;min-height:90px;border:1px solid var(--linea);border-radius:6px;padding:8px;background:#fff}
+.estado-vivo{position:absolute;left:-9999px}
+footer{max-width:1220px;margin:30px auto 40px;padding:0 20px;color:var(--suave);font-size:12px}
+@media (max-width:980px){.imgs{grid-template-columns:repeat(3,minmax(0,1fr))}.vids,.personajes{grid-template-columns:1fr}}
+@media (max-width:640px){.cifras{grid-template-columns:repeat(2,minmax(0,1fr))}.imgs{grid-template-columns:repeat(2,minmax(0,1fr))}.refs{grid-template-columns:repeat(3,minmax(0,1fr))}.vcuerpo{grid-template-columns:1fr}.cuadros{flex-direction:row}.cuadros label{flex:1}.rcab{grid-template-columns:1fr}.costos{text-align:left}.siguiente{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="franja"></div>
+<div class="superior">
+  <span class="marca">Estudio</span>
+  <span class="carpeta" id="carpeta">…</span>
+  <span class="saldo">Saldo OpenRouter <b id="saldo">—</b><button type="button" class="btn" id="ver-saldo">Consultar</button></span>
+</div>
+<div class="pestanas" id="pestanas" role="tablist" aria-label="Producciones y recetas"></div>
+<div id="vista"><p class="vacio envoltura" style="padding-top:20px">Cargando…</p></div>
+<footer>Estudio · tablero local. Generar gasta saldo de OpenRouter solo tras tu aprobación en cada toma.</footer>
+
+<dialog id="dialogo" aria-labelledby="d-titulo">
+  <form method="dialog" class="dialogo">
+    <h2 id="d-titulo">Generar</h2>
+    <div class="meta" id="d-ruta"></div>
+    <dl class="filas" id="d-filas"></dl>
+    <p class="error-texto" id="d-error" hidden></p>
+    <label class="aprobar"><input type="checkbox" id="d-aprobar"><span id="d-texto-aprobar"></span></label>
+    <div class="pie-dialogo">
+      <button type="submit" class="btn grande" value="cancelar">Cancelar</button>
+      <button type="button" class="btn grande barro" id="d-generar" disabled>Generar y gastar</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="nota" aria-labelledby="n-titulo">
+  <form method="dialog" class="dialogo">
+    <h2 id="n-titulo">Nota de dirección</h2>
+    <p class="meta">Qué cambiar. Se agrega al prompt de la siguiente versión.</p>
+    <textarea id="n-texto" required></textarea>
+    <div class="pie-dialogo" style="margin-top:12px">
+      <button type="submit" class="btn grande" value="cancelar">Cancelar</button>
+      <button type="button" class="btn grande prim" id="n-ok">Guardar</button>
+    </div>
+  </form>
+</dialog>
+<div class="estado-vivo" role="status" id="vivo"></div>
+
+<script>
+const TOKEN = "__TOKEN__";
+const $ = id => document.getElementById(id);
+const usd = n => n == null ? "—" : "$" + Number(n).toFixed(2);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const archivo = (ruta, v) => "/archivo?ruta=" + encodeURIComponent(ruta) + (v ? "&v=" + v : "");
+const COLORES = ["#C2652F", "#3E7F57", "#2C5D8A", "#9A6A12", "#7A4E8C", "#2E8A86", "#B4412F", "#5B6B2E"];
+const ETIQ = {falta: ["Sin imagen", ""], pendiente: ["Por revisar", "av"], aprobada: ["Aprobada", "ok"], descartada: ["Descartada", "mal"],
+  aprobado: ["Aprobado", "ok"], cambios: ["Cambios pedidos", "mal"]};
+const chip = e => { const [t, c] = ETIQ[e] || [e, ""]; return `<span class="chip ${c}">${esc(t)}</span>`; };
+let estado = null, saldo = null, abierto = new Set(["personajes"]), sondeo = null, actual = null, prod = null, recarga = Date.now();
+let soloPendiente = false, verPrompts = true;
+
+async function api(ruta, datos, crudo) {
+  let o = {};
+  if (crudo) o = {method: "POST", headers: {"Content-Type": crudo.type, "X-Estudio-Token": TOKEN}, body: crudo};
+  else if (datos !== undefined) o = {method: "POST", headers: {"Content-Type": "application/json", "X-Estudio-Token": TOKEN}, body: JSON.stringify(datos)};
+  const r = await fetch(ruta, o);
+  const cuerpo = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(cuerpo.error || `Error ${r.status}`);
+  return cuerpo;
+}
+const anunciar = t => { $("vivo").textContent = t; };
+function aviso(t) {
+  const caja = document.createElement("div"); caja.className = "aviso mal envoltura"; caja.textContent = t;
+  $("vista").prepend(caja); setTimeout(() => caja.remove(), 9000);
+}
+const ocupado = () => estado && estado.trabajo && estado.trabajo.estado === "en curso";
+
+async function cargar() {
+  try { estado = await api("/api/estado"); } catch (e) { $("vista").innerHTML = `<p class="error-texto envoltura">${esc(e.message)}</p>`; return; }
+  $("carpeta").textContent = estado.carpeta;
+  const ids = [...estado.producciones.map(p => p.id), "__recetas"];
+  const delHash = decodeURIComponent(location.hash.slice(1));
+  if (!ids.includes(actual)) actual = ids.includes(delHash) ? delHash : ids[0];
+  $("pestanas").innerHTML = [...estado.producciones.map(p => [p.id, p.titulo + (p.error ? " ⚠" : "")]), ["__recetas", `Recetas sueltas · ${estado.recetas.length}`]]
+    .map(([id, t]) => `<button type="button" class="pestana" role="tab" aria-selected="${id === actual}" data-tab="${esc(id)}">${esc(t)}</button>`).join("");
+  if (actual === "__recetas") pintarRecetas(); else await cargarProduccion();
+  clearTimeout(sondeo);
+  if (ocupado()) sondeo = setTimeout(cargar, 3000);
+}
+
+function trabajoHtml() {
+  const t = estado.trabajo; if (!t) return "";
+  const seg = Math.round(((t.fin || Date.now() / 1000) - t.inicio));
+  const costo = t.resultado && t.resultado.costo_usd != null ? ` · costo real ${usd(t.resultado.costo_usd)}` : "";
+  const titulo = t.estado === "en curso" ? `En curso: ${t.receta} · ${seg} s` : t.estado === "listo" ? `Listo: ${t.receta}${costo}` : `No se completó: ${t.receta}`;
+  return `<div class="trabajo ${t.estado === "en curso" ? "en-curso" : t.estado}" aria-live="polite"><b>${esc(titulo)}</b>${t.error ? `<p class="error-texto">${esc(t.error)}</p>` : ""}<pre>${esc(t.log.join("\n"))}</pre></div>`;
+}
+
+/* ---------- Producción ---------- */
+async function cargarProduccion() {
+  const p = estado.producciones.find(x => x.id === actual);
+  if (p && p.error) { $("vista").innerHTML = `<div class="envoltura"><div class="aviso mal">${esc(p.id)}/produccion.json: ${esc(p.error)}</div></div>`; return; }
+  try { prod = await api("/api/produccion?id=" + encodeURIComponent(actual)); }
+  catch (e) { $("vista").innerHTML = `<div class="envoltura"><div class="aviso mal">${esc(e.message)}</div></div>`; return; }
+  recarga = Date.now();
+  pintarProduccion();
+}
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+
+function soltar(ruta, texto, datos, alt, numero) {
+  return `<label class="soltar" data-soltar ${datos} title="Toca o arrastra una imagen para subir o reemplazar">
+    ${numero ? `<span class="num">${esc(numero)}</span>` : ""}
+    ${ruta ? `<img src="${archivo(ruta, recarga)}" alt="${esc(alt)}" loading="lazy">` : `<span>Toca o arrastra<br>${esc(texto)}</span>`}
+    <input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Subir ${esc(texto)}"></label>`;
+}
+
+function pintarProduccion() {
+  const p = prod, r = p.resumen, pos = window.scrollY;
+  const colorSec = {}; p.secuencias.forEach((s, i) => colorSec[s.id] = COLORES[i % COLORES.length]);
+  const conteo = s => { let a = 0, t = 0; s.tomas.forEach(x => x.imagenes.forEach(i => { t++; a += i.estado === "aprobada"; })); return `${a}/${t}`; };
+  const personajes = p.personajes.map(c => `<article class="personaje ${c.estado === "aprobado" ? "aprobado" : ""}">
+      <div class="pcab"><h4>${esc(c.nombre)}</h4><code>${esc(c.id)}</code>${chip(c.estado)}</div>
+      ${c.descripcion ? `<div class="campo">Aspecto</div><div class="texto-campo">${esc(c.descripcion)}</div>` : ""}
+      ${c.nota ? `<p class="nota">Nota: ${esc(c.nota)}</p>` : ""}
+      <div class="campo">Referencias · toca o arrastra para subir o reemplazar</div>
+      <div class="refs">${c.vistas.map(v => `<div class="ref">${soltar(c.referencias_archivos[v], v, `data-ref="${esc(c.id)}" data-vista="${esc(v)}"`, `${c.nombre} ${v}`)}<span>${esc(v)}</span></div>`).join("")}</div>
+      <div class="fila"><button type="button" class="btn okb" data-personaje="${esc(c.id)}" data-decision="aprobar_personaje" ${c.estado === "aprobado" ? "disabled" : ""}>Aprobar personaje</button>
+      <button type="button" class="btn malb" data-personaje="${esc(c.id)}" data-decision="cambios_personaje">Pedir cambios</button></div></article>`).join("");
+  const secuencias = p.secuencias.map((s, i) => {
+    const tomas = s.tomas.filter(t => !soloPendiente || t.imagenes.some(x => x.estado !== "aprobada") || t.variantes.some(v => v.estado !== "aprobada"));
+    if (!tomas.length) return "";
+    const dur = s.tomas.reduce((a, t) => a + Number(t.duracion), 0);
+    return `<section class="secuencia" id="sec-${esc(s.id)}" style="--c:${colorSec[s.id]}">
+      <div class="ceja">Secuencia ${esc(s.id)}</div><h2>${esc(s.titulo)}</h2>
+      <div class="meta">${s.tomas.length} ${s.tomas.length === 1 ? "toma" : "tomas"} · ${dur} s</div>
+      ${s.descripcion ? `<div class="criterio">${esc(s.descripcion)}</div>` : ""}
+      ${tomas.map(t => toma(t)).join("")}</section>`;
+  }).join("");
+  $("vista").innerHTML = `
+    <header class="heroe"><div class="heroe-in">
+      <span class="pastilla">Producción · ${esc(p.id)}</span>
+      <h1>${esc(p.titulo)}</h1>${p.descripcion ? `<p>${esc(p.descripcion)}</p>` : ""}
+      <div class="cifras">
+        <div class="cifra"><b>${r.personajes_aprobados} / ${p.personajes.length}</b><span>Personajes aprobados</span><div class="barra"><i style="width:${pct(r.personajes_aprobados, p.personajes.length)}%"></i></div></div>
+        <div class="cifra"><b>${r.imagenes_aprobadas} / ${r.imagenes}</b><span>Imágenes aprobadas</span><div class="barra"><i style="width:${pct(r.imagenes_aprobadas, r.imagenes)}%"></i></div></div>
+        <div class="cifra"><b>${r.clips_aprobados} / ${r.clips}</b><span>Clips aprobados</span><div class="barra"><i style="width:${pct(r.clips_aprobados, r.clips)}%"></i></div></div>
+        <div class="cifra"><b>${usd(r.gastado_usd)}</b><span>Gastado en video</span><div class="barra"><i style="width:0"></i></div></div>
+      </div>
+      <div class="pildoras"><span>${esc(p.video.modelo)}</span><span>${esc(p.video.resolucion || "")} · ${esc(p.video.formato || "")}</span>
+        <span>audio ${p.video.audio ? "sí" : "no"}</span><span>tope por clip ${usd(p.video.max_usd_clip)}</span><span>${r.por_revisar} por revisar</span></div>
+    </div></header>
+    <nav class="secnav" aria-label="Secuencias"><div class="envoltura">${p.secuencias.map(s => `<a class="secbtn" href="#sec-${esc(s.id)}" data-ir="sec-${esc(s.id)}"><i style="background:${colorSec[s.id]}"></i>${esc(s.id)} · ${esc(s.titulo)} <small>${conteo(s)}</small></a>`).join("")}</div></nav>
+    <main class="envoltura">
+      ${trabajoHtml()}
+      <div class="siguiente"><div><b>SIGUIENTE</b>${p.faltan_imagenes ? `Faltan ${p.faltan_imagenes} imágenes de toma (la primera: ${esc(p.siguiente[0])}). Súbelas aquí o pide a un agente que las genere con <code>estudio produccion estado</code>.`
+        : r.por_revisar ? `Hay ${r.por_revisar} piezas por revisar.` : r.clips_aprobados < r.clips ? "Genera y revisa los clips de cada variante." : "Todo aprobado: arma la animática."}</div></div>
+      <div class="herramientas"><button type="button" class="alterna" id="solo-pendiente" aria-pressed="${soloPendiente}">Solo tomas con algo pendiente</button>
+        <button type="button" class="alterna" id="ver-prompts" aria-pressed="${verPrompts}">Mostrar prompts</button></div>
+      <details class="bloque" data-bloque="guion" ${abierto.has("guion") ? "open" : ""}><summary>00 · Guion</summary><div class="cuerpo-bloque">
+        ${p.guion ? `<div class="guion">${esc(p.guion)}</div>` : `<p class="vacio">Sin guion.md en la producción.</p>`}
+        ${p.estilo ? `<div class="campo">Estilo común a todas las tomas</div><div class="texto-campo">${esc(p.estilo)}</div>` : ""}</div></details>
+      <details class="bloque" data-bloque="personajes" ${abierto.has("personajes") ? "open" : ""}><summary>01 · Personajes · aspecto y referencias</summary><div class="cuerpo-bloque">
+        <p class="guia">Cada personaje se define una sola vez. Su aspecto entra en el prompt de cada toma donde aparece. Una referencia nueva lo regresa a «por revisar».</p>
+        ${p.personajes.length ? `<div class="personajes">${personajes}</div>` : `<p class="vacio">Esta producción no tiene personajes.</p>`}</div></details>
+      <details class="bloque animatica" data-bloque="animatica" ${abierto.has("animatica") ? "open" : ""}><summary>02 · Animática · corte preliminar</summary><div class="cuerpo-bloque">
+        <p class="guia">En orden del guion: el clip aprobado de cada toma (el marcado para el corte o el primero aprobado), recortado a su duración; si no hay clip, su imagen aprobada fija; si tampoco, negro. No gasta saldo.</p>
+        <button type="button" class="btn prim grande" id="armar-animatica" ${ocupado() || !estado.ffmpeg ? "disabled" : ""}>${p.animatica ? "Volver a armar la animática" : "Armar animática"}</button>
+        ${!estado.ffmpeg ? `<p class="error-texto">Necesita ffmpeg.</p>` : ""}
+        ${p.animatica ? `<video src="${archivo(p.animatica, recarga)}" controls preload="metadata"></video><p><a href="${archivo(p.animatica)}" download>Descargar animática</a></p>` : ""}</div></details>
+      <div class="${verPrompts ? "" : "sin-prompts"}">${secuencias || `<p class="vacio">No hay tomas con pendientes.</p>`}</div>
+    </main>`;
+  window.scrollTo(0, pos);
+}
+
+function toma(t) {
+  const aprob = t.imagenes.filter(i => i.estado === "aprobada").length;
+  const imgs = t.imagenes.map(i => `<div class="tesela ${i.estado === "aprobada" ? "aprobada" : ""}">
+      ${soltar(i.archivo, "la imagen " + i.id, `data-toma="${esc(t.id)}" data-imagen="${esc(i.id)}"`, `Toma ${t.id}, imagen ${i.id}`, i.id)}
+      <div class="tcuerpo"><div class="fila" style="margin:0">${chip(i.estado)}${i.versiones ? `<span class="chip">${i.versiones} ant.</span>` : ""}</div>
+        <div class="tdesc">${esc(i.prompt)}</div>${i.nota ? `<div class="nota">Nota: ${esc(i.nota)}</div>` : ""}
+        <div class="tprompt">${esc(i.prompt_completo)}</div>
+        <div class="tfila">${i.estado === "pendiente" ? `<button type="button" class="btn okb crece" data-grupo="imagenes" data-clave="${esc(t.id + "/" + i.id)}" data-decision="aprobar">Aprobar</button>` : ""}
+          ${i.estado === "pendiente" || i.estado === "aprobada" ? `<button type="button" class="btn malb" data-grupo="imagenes" data-clave="${esc(t.id + "/" + i.id)}" data-decision="descartar">Descartar</button>` : ""}
+          <button type="button" class="btn prim crece" data-copiar="${esc(i.prompt_completo)}">Copiar prompt</button></div></div></div>`).join("");
+  const opciones = (sel, vacio) => `<option value="">${vacio}</option>${t.imagenes.map(i => `<option value="${esc(i.id)}" ${sel === i.id ? "selected" : ""}>Imagen ${esc(i.id)}</option>`).join("")}`;
+  const mini = (id, rotulo) => { const i = t.imagenes.find(x => x.id === id); const con = i && i.archivo;
+    return `<div class="miniatura ${con ? "con" : ""}" ${con ? `style="background-image:url('${archivo(i.archivo, recarga)}')"` : ""}>${esc(rotulo)}${id ? " · " + esc(id) : ""}</div>`; };
+  const vars = t.variantes.map(v => {
+    const supera = v.estimado_usd != null && v.estimado_usd > v.max_usd;
+    const motivo = ocupado() ? "Hay un trabajo en curso" : v.faltas.length ? "Antes: " + v.faltas.join("; ") : supera ? "El estimado supera el tope por clip" : "";
+    const k = esc(t.id + "/" + v.id);
+    return `<div class="vtarjeta ${v.en_corte ? "corte" : ""}">
+      <div class="vcab"><b>Variante ${esc(v.id)}</b><span class="chips" style="margin:0">${v.en_corte ? `<span class="chip ok">En el corte</span>` : ""}${v.versiones ? `<span class="chip">${v.versiones} ant.</span>` : ""}
+        ${v.estado === "falta" ? `<span class="chip">Sin clip</span>` : chip(v.estado)}</span></div>
+      <div class="vcuerpo"><div class="cuadros">
+          ${mini(v.primer, "Primer")}<label>Primer<select data-var="${k}" data-campo="primer">${opciones(v.primer, "— ninguno —")}</select></label>
+          ${mini(v.ultimo, "Último")}<label>Último<select data-var="${k}" data-campo="ultimo">${opciones(v.ultimo, "— ninguno —")}</select></label></div>
+        <div class="vtexto"><textarea data-var="${k}" data-campo="movimiento" aria-label="Movimiento de la variante ${k}" placeholder="Movimiento de cámara y acción">${esc(v.movimiento)}</textarea>
+          <div class="costo">Genera ${esc(v.duracion_generada)} s (toma de ${esc(t.duracion)} s) · estimado ${usd(v.estimado_usd)} · tope ${usd(v.max_usd)}${v.costo_usd != null ? ` · costó ${usd(v.costo_usd)}` : ""}</div>
+          ${v.faltas.length ? `<p class="error-texto">Antes de generar: ${esc(v.faltas.join("; "))}</p>` : supera ? `<p class="error-texto">El estimado supera el tope por clip.</p>` : ""}
+          ${v.nota ? `<p class="nota">Nota: ${esc(v.nota)}</p>` : ""}
+          <div class="tprompt" style="margin-top:6px">${esc(v.prompt_completo)}</div></div></div>
+      <div class="clip">${v.archivo ? `<video src="${archivo(v.archivo, recarga)}" controls preload="metadata" aria-label="Clip ${k}"></video>` : "Sin clip todavía"}</div>
+      <div class="vpie"><button type="button" class="btn barro" data-generar-var="${k}" ${motivo ? `disabled title="${esc(motivo)}"` : ""}>${v.archivo ? "Generar otra versión…" : "Generar…"}</button>
+        ${v.archivo ? `${v.estado === "pendiente" ? `<button type="button" class="btn okb" data-grupo="clips" data-clave="${k}" data-decision="aprobar">Aprobar</button>` : ""}
+          <button type="button" class="btn malb" data-grupo="clips" data-clave="${k}" data-decision="descartar">Descartar</button>
+          ${v.estado === "aprobada" && !v.en_corte ? `<button type="button" class="btn" data-corte="${k}">Usar en el corte</button>` : ""}
+          <button type="button" class="btn" data-revisar="${esc(v.archivo)}">Revisar</button><a class="btn" href="${archivo(v.archivo)}" download>Descargar</a>` : ""}
+        <button type="button" class="btn prim" data-copiar="${esc(v.prompt_completo)}">Copiar prompt de movimiento</button></div>
+      <div class="resultado-accion" aria-live="polite" style="padding:0 11px"></div></div>`;
+  }).join("");
+  return `<article class="toma" id="toma-${esc(t.id)}">
+    <div class="tcab"><span class="tnum">#${esc(t.id)}</span><h3>${esc(t.titulo)}</h3>
+      <span class="chips"><span class="chip">${esc(t.duracion)} s en el corte</span><span class="chip ${aprob === t.imagenes.length && aprob ? "ok" : ""}">${aprob}/${t.imagenes.length} img aprobadas</span></span></div>
+    ${t.descripcion ? `<p class="uso"><b>EN EL CORTE</b>${esc(t.descripcion)}</p>` : ""}
+    ${t.personajes.length ? `<div class="elenco"><span class="meta" style="font-size:11px">ELENCO</span>${t.personajes.map(x => `<span>${esc((prod.personajes.find(c => c.id === x) || {}).nombre || x)}</span>`).join("")}</div>` : ""}
+    <div class="rotulo"><span>Imágenes</span><span>${t.imagenes.filter(i => i.archivo).length} de ${t.imagenes.length} subidas</span></div>
+    ${imgs ? `<div class="imgs">${imgs}</div>` : `<p class="vacio">Sin imágenes definidas.</p>`}
+    <div class="rotulo"><span>Video · variantes</span></div>
+    ${vars ? `<div class="vids">${vars}</div>` : `<p class="vacio">Sin variantes definidas.</p>`}</article>`;
+}
+
+/* ---------- Recetas sueltas ---------- */
+function estadoReceta(r) {
+  if (r.error) return ["mal", "Receta con error"];
+  if (r.espera) return ["av", "Espera toma anterior"];
+  const videos = r.salidas.filter(s => !s.hoja);
+  if (videos.length) return ["ok", videos.length === 1 ? "Generada" : `${videos.length} versiones`];
+  return ["", "Sin generar"];
+}
+function pintarRecetas() {
+  const q = ($("buscar")?.value || "").trim().toLowerCase(), soloPend = $("solo-pendientes")?.getAttribute("aria-pressed") === "true";
+  const recetas = estado.recetas;
+  const pendientes = recetas.filter(r => !r.salidas.some(s => !s.hoja));
+  const visibles = recetas.filter(r => (!soloPend || pendientes.includes(r)) && (!q || [r.nombre, r.ruta, r.prompt].some(x => String(x || "").toLowerCase().includes(q))));
+  const grupos = {};
+  for (const r of visibles) (grupos[r.ruta.includes("/") ? r.ruta.slice(0, r.ruta.lastIndexOf("/")) : "."] ??= []).push(r);
+  const lista = !recetas.length ? `<p class="vacio">No hay recetas sueltas en esta carpeta. Una receta es un JSON con «nombre» y «prompt» (ver ejemplos/).</p>`
+    : !visibles.length ? `<p class="vacio">Ninguna receta coincide.</p>`
+    : Object.entries(grupos).map(([g, rs]) => `<section class="grupo"><h2>${esc(g)}/</h2>${rs.map(tarjeta).join("")}</section>`).join("");
+  const enfoque = document.activeElement && document.activeElement.id;
+  $("vista").innerHTML = `<main class="envoltura">${trabajoHtml()}
+    ${estado.catalogo ? `<div class="aviso">Sin catálogo de precios: ${esc(estado.catalogo)}. No habrá estimados.</div>` : ""}
+    <section class="resumen" aria-label="Resumen">
+      <div class="dato"><span>Recetas</span><b>${recetas.length}</b></div>
+      <div class="dato"><span>Sin generar</span><b>${pendientes.length}</b></div>
+      <div class="dato"><span>Gastado (registro)</span><b>${usd(recetas.reduce((a, r) => a + r.gastado_usd, 0))}</b></div>
+      <div class="dato"><span>Estimado pendiente</span><b>${usd(pendientes.reduce((a, r) => a + (r.estimado_usd || 0), 0))}</b></div></section>
+    <div class="filtros"><input type="search" id="buscar" placeholder="Buscar por nombre, ruta o prompt" aria-label="Buscar recetas" value="${esc(q)}">
+      <button type="button" class="alterna" id="solo-pendientes" aria-pressed="${!!soloPend}">Solo sin generar</button></div>${lista}</main>`;
+  if (enfoque === "buscar") { const b = $("buscar"); b.focus(); b.setSelectionRange(b.value.length, b.value.length); }
+}
+function tarjeta(r) {
+  const [clase, texto] = estadoReceta(r);
+  const supera = r.estimado_usd != null && r.max_usd != null && r.estimado_usd > r.max_usd;
+  const motivo = r.error ? "La receta tiene un error" : r.espera ? r.espera : ocupado() ? "Hay un trabajo en curso" : supera ? "El estimado supera el tope" : "";
+  const salidas = r.salidas.map(s => `<figure class="salida">${s.tipo === "video" ? `<video src="${archivo(s.ruta)}" controls preload="metadata" aria-label="${esc(s.nombre)}"></video>` : `<img src="${archivo(s.ruta)}" alt="${esc(s.nombre)}" loading="lazy">`}
+      <div><span>${esc(s.nombre)} · ${(s.bytes / 1048576).toFixed(1)} MB</span>${s.tipo === "video" ? `<button type="button" class="btn" data-revisar="${esc(s.ruta)}">Revisar</button><button type="button" class="btn" data-ultimo="${esc(s.ruta)}">Último cuadro</button>` : ""}<a class="btn" href="${archivo(s.ruta)}" download>Descargar</a></div></figure>`).join("");
+  return `<article class="receta"><div class="rcab"><div>
+      <h3>${esc(r.nombre)} <span class="chip ${clase}">${texto}</span></h3>
+      <div class="meta">${esc(r.tipo)} · ${esc(r.modelo || "sin modelo")}${r.duracion ? ` · ${esc(r.duracion)} s` : ""}${r.continuar_de ? ` · continúa de ${esc(r.continuar_de)}` : ""}</div>
+      ${r.error ? `<p class="error-texto">${esc(r.error)}</p>` : supera ? `<p class="error-texto">El estimado (${usd(r.estimado_usd)}) supera el tope (${usd(r.max_usd)}): sube «max_usd» o baja la duración.</p>` : ""}</div>
+    <div><div class="costos">Estimado ${usd(r.estimado_usd)} · tope ${usd(r.max_usd)}<small>${r.generaciones ? `Gastado ${usd(r.gastado_usd)} en ${r.generaciones} ${r.generaciones === 1 ? "generación" : "generaciones"}` : "Sin gasto registrado"}</small></div>
+      <div class="fila" style="justify-content:flex-end"><button type="button" class="btn barro" data-generar="${esc(r.ruta)}" ${motivo ? `disabled title="${esc(motivo)}"` : ""}>${r.salidas.some(s => !s.hoja) ? "Generar otra versión…" : "Generar…"}</button></div></div></div>
+    <details class="detalle" ${abierto.has(r.ruta) ? "open" : ""} data-detalle="${esc(r.ruta)}"><summary>Prompt y resultados (${r.salidas.length})</summary>
+      <div class="dcuerpo"><div class="tprompt" style="max-height:none">${esc(r.prompt)}</div>${salidas ? `<div class="salidas">${salidas}</div>` : `<p class="vacio">Todavía no hay resultados.</p>`}
+      <div class="resultado-accion" aria-live="polite"></div></div></details></article>`;
+}
+
+/* ---------- Saldo y aprobación de gasto ---------- */
+async function consultarSaldo() {
+  $("ver-saldo").disabled = true; $("saldo").textContent = "…";
+  try { saldo = (await api("/api/saldo", {})).saldo_usd; $("saldo").textContent = "$" + saldo.toFixed(3); anunciar("Saldo " + saldo.toFixed(2)); }
+  catch (e) { saldo = null; $("saldo").textContent = "—"; aviso(e.message); }
+  finally { $("ver-saldo").disabled = false; }
+  return saldo;
+}
+let pedido = null;
+async function abrirDialogo(datos) {
+  pedido = datos;
+  const sinEstimado = datos.estimado == null;
+  pedido.aprobado = sinEstimado ? Number(datos.tope) : datos.estimado; pedido.sinEstimado = sinEstimado;
+  $("d-titulo").textContent = datos.titulo; $("d-ruta").textContent = datos.ruta;
+  $("d-error").hidden = true; $("d-aprobar").checked = false; $("d-generar").disabled = true;
+  $("d-texto-aprobar").textContent = sinEstimado
+    ? `Este modelo no tiene estimado. Apruebo gastar en esta toma, una sola vez, con el tope de ${usd(datos.tope)} y el riesgo de que el precio real difiera.`
+    : `Apruebo gastar hasta ${usd(pedido.aprobado)} en esta toma, una sola vez. Un reintento con costo necesita otra aprobación.`;
+  const filas = s => [...datos.filas, ["Estimado", usd(datos.estimado)], ["Tope", usd(datos.tope)], ["Saldo", s === undefined ? "consultando…" : s == null ? "no disponible" : "$" + s.toFixed(3)]]
+    .map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join("");
+  $("d-filas").innerHTML = filas(undefined);
+  $("dialogo").showModal();
+  const s = await consultarSaldo();
+  $("d-filas").innerHTML = filas(s);
+  if (s == null) { $("d-error").textContent = "No se pudo consultar el saldo. Revisa que ComfyUI esté abierto."; $("d-error").hidden = false; }
+  else if (!sinEstimado && datos.estimado > s) { $("d-error").textContent = "El estimado supera el saldo disponible."; $("d-error").hidden = false; }
+}
+$("d-aprobar").addEventListener("change", e => { $("d-generar").disabled = !e.target.checked || !$("d-error").hidden; });
+$("d-generar").addEventListener("click", async () => {
+  $("d-generar").disabled = true;
+  try {
+    await api(pedido.ruta_api, {...pedido.cuerpo, aprobado_usd: pedido.aprobado, sin_estimado: pedido.sinEstimado, confirmacion: $("d-aprobar").checked});
+    $("dialogo").close(); anunciar("Generación iniciada"); cargar();
+  } catch (e) { $("d-error").textContent = e.message; $("d-error").hidden = false; }
+});
+let notaPendiente = null;
+function pedirNota(titulo, accionFn) { notaPendiente = accionFn; $("n-titulo").textContent = titulo; $("n-texto").value = ""; $("nota").showModal(); $("n-texto").focus(); }
+$("n-ok").addEventListener("click", async () => {
+  const texto = $("n-texto").value.trim(); if (!texto) { $("n-texto").focus(); return; }
+  $("nota").close();
+  try { await notaPendiente(texto); } catch (e) { aviso(e.message); }
+});
+async function accion(datos) { await api("/api/produccion/accion", {id: actual, ...datos}); await cargarProduccion(); }
+async function subir(caja, archivoSubido) {
+  if (!archivoSubido) return;
+  const q = caja.dataset.ref ? `personaje=${encodeURIComponent(caja.dataset.ref)}&vista=${encodeURIComponent(caja.dataset.vista)}`
+    : `toma=${encodeURIComponent(caja.dataset.toma)}&imagen=${encodeURIComponent(caja.dataset.imagen)}`;
+  caja.classList.add("ocupado");
+  try { await api(`/api/produccion/subir?id=${encodeURIComponent(actual)}&${q}`, null, archivoSubido); anunciar("Imagen subida"); await cargarProduccion(); }
+  catch (e) { caja.classList.remove("ocupado"); aviso(e.message); }
+}
+
+/* ---------- Eventos ---------- */
+document.addEventListener("click", async e => {
+  const tab = e.target.closest("[data-tab]");
+  if (tab) { actual = tab.dataset.tab; history.replaceState(null, "", "#" + encodeURIComponent(actual)); window.scrollTo(0, 0); return cargar(); }
+  const ir = e.target.closest("[data-ir]");
+  if (ir) { e.preventDefault(); document.getElementById(ir.dataset.ir)?.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); return; }
+  if (e.target.id === "solo-pendiente") { soloPendiente = !soloPendiente; return pintarProduccion(); }
+  if (e.target.id === "ver-prompts") { verPrompts = !verPrompts; return pintarProduccion(); }
+  if (e.target.id === "solo-pendientes") { e.target.setAttribute("aria-pressed", e.target.getAttribute("aria-pressed") !== "true"); return pintarRecetas(); }
+  const g = e.target.closest("[data-generar]");
+  if (g) {
+    const r = estado.recetas.find(x => x.ruta === g.dataset.generar);
+    return abrirDialogo({titulo: "Generar " + r.nombre, ruta: r.ruta, estimado: r.estimado_usd, tope: r.max_usd,
+      filas: [["Modelo", r.modelo], ["Duración", r.duracion ? r.duracion + " s" : "—"], ...(r.continuar_de ? [["Continúa de", r.continuar_de]] : [])],
+      ruta_api: "/api/generar", cuerpo: {receta: r.ruta, huella: r.huella}});
+  }
+  const gv = e.target.closest("[data-generar-var]");
+  if (gv) {
+    const [tid, vid] = gv.dataset.generarVar.split("/");
+    const t = prod.secuencias.flatMap(s => s.tomas).find(x => x.id === tid), v = t.variantes.find(x => x.id === vid);
+    return abrirDialogo({titulo: `Toma ${tid} · variante ${vid}`, ruta: `${prod.titulo} · ${t.titulo}`, estimado: v.estimado_usd, tope: v.max_usd,
+      filas: [["Modelo", prod.video.modelo], ["Duración generada", v.duracion_generada + " s"], ["Primer cuadro", v.primer ? "imagen " + v.primer : "—"], ["Último cuadro", v.ultimo ? "imagen " + v.ultimo : "—"]],
+      ruta_api: "/api/produccion/generar", cuerpo: {id: actual, toma: tid, variante: vid, huella: v.huella}});
+  }
+  const d = e.target.closest("[data-decision]");
+  if (d) {
+    if (d.dataset.personaje) {
+      if (d.dataset.decision === "cambios_personaje") return pedirNota("Cambios para " + d.dataset.personaje, nota => accion({accion: "cambios_personaje", personaje: d.dataset.personaje, nota}));
+      return accion({accion: "aprobar_personaje", personaje: d.dataset.personaje}).catch(err => aviso(err.message));
+    }
+    if (d.dataset.decision === "descartar") return pedirNota("Descartar " + d.dataset.clave, nota => accion({accion: "descartar", grupo: d.dataset.grupo, clave: d.dataset.clave, nota}));
+    return accion({accion: "aprobar", grupo: d.dataset.grupo, clave: d.dataset.clave}).catch(err => aviso(err.message));
+  }
+  const c = e.target.closest("[data-corte]");
+  if (c) { const [toma, variante] = c.dataset.corte.split("/"); return accion({accion: "corte", toma, variante}).catch(err => aviso(err.message)); }
+  const cp = e.target.closest("[data-copiar]");
+  if (cp) {
+    try { await navigator.clipboard.writeText(cp.dataset.copiar); const antes = cp.textContent; cp.textContent = "Copiado ✓"; setTimeout(() => cp.textContent = antes, 1500); }
+    catch { aviso("No se pudo copiar; activa «Mostrar prompts» y selecciona el texto."); }
+    return;
+  }
+  if (e.target.id === "armar-animatica") { try { await api("/api/produccion/animatica", {id: actual}); anunciar("Armando animática"); cargar(); } catch (err) { aviso(err.message); } return; }
+  const b = e.target.closest("[data-revisar],[data-ultimo]"); if (!b) return;
+  const caja = b.closest(".dcuerpo, .vtarjeta").querySelector(".resultado-accion");
+  b.disabled = true; caja.textContent = "Procesando…";
+  try {
+    if (b.dataset.revisar) {
+      const r = await api("/api/revisar", {archivo: b.dataset.revisar});
+      caja.innerHTML = `<p class="meta">${esc(r.info)}<br>Errores: ${esc(r.errores || "ninguno")} · Silencios: ${esc(JSON.stringify(r.silencios) || "ninguno")}<br><em>${esc(r.aviso)}</em></p><img src="${archivo(r.hoja, Date.now())}" alt="Hoja de cuadros" style="max-width:100%">`;
+    } else {
+      const r = await api("/api/ultimo-cuadro", {archivo: b.dataset.ultimo});
+      caja.innerHTML = `<p>Guardado: ${esc(r.imagen)}</p><img src="${archivo(r.imagen)}" alt="Último cuadro" style="max-width:100%">`;
+    }
+  } catch (err) { caja.innerHTML = `<p class="error-texto">${esc(err.message)}</p>`; }
+  finally { b.disabled = false; }
+});
+document.addEventListener("change", async e => {
+  const f = e.target.closest("[data-soltar] input[type=file]");
+  if (f) return subir(f.closest("[data-soltar]"), f.files[0]);
+  if (e.target.matches("select[data-var]")) {
+    const [toma, variante] = e.target.dataset.var.split("/");
+    return accion({accion: "variante", toma, variante, [e.target.dataset.campo]: e.target.value}).catch(err => { aviso(err.message); cargarProduccion(); });
+  }
+  if (e.target.matches("textarea[data-var]")) {
+    const [toma, variante] = e.target.dataset.var.split("/");
+    return accion({accion: "variante", toma, variante, movimiento: e.target.value}).catch(err => aviso(err.message));
+  }
+});
+["dragenter", "dragover"].forEach(tipo => document.addEventListener(tipo, e => { const c = e.target.closest("[data-soltar]"); if (c) { e.preventDefault(); c.classList.add("encima"); } }));
+document.addEventListener("dragleave", e => { const c = e.target.closest("[data-soltar]"); if (c && !c.contains(e.relatedTarget)) c.classList.remove("encima"); });
+document.addEventListener("drop", e => { const c = e.target.closest("[data-soltar]"); if (!c) return; e.preventDefault(); c.classList.remove("encima"); subir(c, e.dataTransfer.files[0]); });
+document.addEventListener("input", e => { if (e.target.id === "buscar") pintarRecetas(); });
+document.addEventListener("toggle", e => { const d = e.target, k = d.dataset && (d.dataset.detalle || d.dataset.bloque); if (k) d.open ? abierto.add(k) : abierto.delete(k); }, true);
+$("ver-saldo").addEventListener("click", consultarSaldo);
+cargar();
+</script>
+</body>
+</html>

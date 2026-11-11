@@ -10,6 +10,8 @@ Este repo contiene `estudio`, la herramienta para generar video e imagen con Ope
 4. **No subas material sensible** de clientes sin confirmar que se puede enviar a terceros.
 5. **Sé honesto con la revisión:** no puedes oír el audio; di que solo mediste que hay sonido y pide a una persona que lo escuche.
 
+6. **El panel (`estudio panel`) es para personas.** No llames a sus rutas `/api/generar` ni marques su aprobación por tu cuenta: la aprobación del panel la da quien está frente a la pantalla. Puedes abrirlo y explicar qué muestra.
+
 ## Pasos
 
 1. Pregunta lo que falte: historia, duración, formato, audio, dónde se usará y presupuesto.
@@ -30,6 +32,12 @@ Este repo contiene `estudio`, la herramienta para generar video e imagen con Ope
 - Los videos de referencia solo funcionan con un enlace HTTPS público (`estudio cola` prepara el fragmento). Nunca subas un fragmento a un sitio público sin aprobación explícita de la persona para ese material.
 - Mantén el mismo personaje entre tomas con `referencias` o con el fotograma de la toma anterior.
 - Para modelos sin estimado o para imágenes, revisa el precio con `estudio modelos`, avisa a la persona que no hay estimado y usa `--sin-estimado` solo con su aprobación.
+
+## Producciones
+
+- Si la persona trae una idea de varias tomas, propón crear una producción (`estudio produccion nueva`) y ayúdale a llenar `produccion.json` y `guion.md`. Lee `docs/PRODUCCIONES.md`.
+- `estudio produccion estado <carpeta>` lista las imágenes que faltan con su prompt completo. Si te piden hacerlas, guárdalas como `imagenes/<toma>-<imagen>.png`; entran como pendientes de revisión.
+- No apruebes imágenes, clips ni personajes, y no generes clips desde el tablero: eso lo hace la persona en el panel.
 
 ## Si algo falla
 

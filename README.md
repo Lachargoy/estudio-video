@@ -35,6 +35,22 @@ estudio cola toma.mp4 cola.mp4 --segundos 2   # últimos segundos, para usarlos 
 estudio unir a.mp4 b.mp4 -o final.mp4 --recortar-inicio 1     # une tomas
 ```
 
+## Producciones y tablero
+
+Para un corto o cualquier pieza de varias tomas, con tu propia idea:
+
+```bash
+estudio produccion nueva mi-corto --titulo "Mi corto"   # plantilla: guion, estilo, personajes, secuencias y tomas
+estudio produccion estado mi-corto                      # qué falta, con el prompt de cada imagen
+estudio panel . --abrir                                 # tablero en http://127.0.0.1:4300/
+```
+
+El tablero muestra el guion, los personajes con sus referencias, cada toma con sus imágenes, sus variantes de video A/B y los clips generados, con versiones anteriores, notas de dirección, costo por clip y animática. Las imágenes se suben ahí o las guarda un agente. Los clips se generan con OpenRouter desde el tablero, solo con imágenes aprobadas y después de que una persona apruebe el monto. Guía completa: [docs/PRODUCCIONES.md](docs/PRODUCCIONES.md).
+
+La pestaña **Recetas sueltas** lista las recetas individuales de la carpeta con su estimado frente al tope, lo gastado y sus resultados, y permite generarlas con la misma aprobación.
+
+El tablero solo escucha en `127.0.0.1` y solo sirve archivos de la carpeta indicada. Necesita ComfyUI encendido para consultar el saldo y para generar; sin ComfyUI se puede revisar y aprobar todo lo demás.
+
 ## Receta
 
 ```json
