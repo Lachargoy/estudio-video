@@ -107,7 +107,12 @@ def revisar(video, hoja):
     r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(video), "-af", "silencedetect=n=-35dB:d=0.5", "-vn", "-f", "null", "-"],
                        capture_output=True, text=True)
     silencios = [ln.split("] ")[1] for ln in r.stderr.splitlines() if "silence_end" in ln or "silence_start" in ln]
-    _ffmpeg("-v", "error", "-y", "-i", str(video), "-vf", "fps=1,scale=480:-1,tile=4x4:padding=4:color=gray", "-frames:v", "1", str(hoja))
+    duracion = max(_medir(video)["duracion"], 1 / 24)
+    # Siempre se reparte la hoja por el video completo, también en historias de
+    # más de 16 segundos. El último cuadro completa clips de muy pocos cuadros.
+    filtro_hoja = (f"fps=16/{duracion:.9f},tpad=stop_mode=clone:stop_duration={duracion/16:.9f},"
+                   "trim=end_frame=16,scale=480:-1,tile=4x4:padding=4:color=gray")
+    _ffmpeg("-v", "error", "-y", "-i", str(video), "-vf", filtro_hoja, "-frames:v", "1", str(hoja))
     return info, errores, silencios
 
 

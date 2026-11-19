@@ -1,0 +1,141 @@
+{
+  "titulo": "Promesa y sorpresa · ejemplo de continuidad",
+  "descripcion": "Ejemplo genérico: prometer un premio, recibirlo en privado y revelarlo después de una pregunta. No incluye medios ni aprobaciones.",
+  "estilo": "Natural live-action look, stable identities, soft daylight, consistent screen direction and realistic contact between hands and props. Fictional unbranded neighborhood event.",
+  "negativo": "duplicate plush, transparent tote, toy visible before question, repeated delivery, repeated extraction, teleportation, extra limbs, logo, watermark",
+  "continuidad": "Preserve one woman, one friend, one attendant, one jaguar plush and one opaque tote. Keep wardrobe, hand occupancy and positions stable. t01 shows only a printed catalog illustration. t02 delivers the real toy privately once, with the friend absent; the woman fully conceals it inside a closed opaque tote and leaves. t03 starts with the toy COMPLETELY HIDDEN. The friend finishes the question before she opens the tote and reveals ONE toy once. Never use a revealed-toy picture as the first frame. Estimate and request explicit approval per paid take before generating.",
+  "video": {
+    "modelo": "minimax/hailuo-3",
+    "resolucion": "2K",
+    "formato": "16:9",
+    "audio": true,
+    "max_usd_clip": 2
+  },
+  "personajes": [
+    {
+      "id": "PROTA",
+      "nombre": "Protagonista",
+      "descripcion": "Fictional adult woman, short dark hair, cream shirt, green jacket and one plain opaque fabric tote.",
+      "vistas": [
+        "oficial"
+      ]
+    },
+    {
+      "id": "AMIGO",
+      "nombre": "Amigo",
+      "descripcion": "Fictional adult man, curly dark hair, blue shirt and beige trousers.",
+      "vistas": [
+        "oficial"
+      ]
+    }
+  ],
+  "secuencias": [
+    {
+      "id": "01",
+      "titulo": "Promesa y sorpresa",
+      "descripcion": "El amigo conoce la promesa, pero no presencia el canje.",
+      "tomas": [
+        {
+          "id": "t01",
+          "titulo": "La promesa",
+          "descripcion": "At a fictional neighborhood event, the woman points to a jaguar plush illustration in an unbranded printed reward catalog and makes a promise to her friend. No physical toy is present.",
+          "duracion": 6,
+          "personajes": [
+            "PROTA",
+            "AMIGO"
+          ],
+          "imagenes": [
+            {
+              "id": "1",
+              "prompt": "Initial frame: woman and friend look at a printed catalog showing only a small jaguar plush illustration. Their hands are empty apart from the catalog. No physical toy anywhere."
+            }
+          ],
+          "variantes": {
+            "A": {
+              "primer": "1",
+              "ultimo": null,
+              "movimiento": "First she points to the illustration. She looks at her friend and says: 'That jaguar? I am going to earn it.' He smiles. The toy stays a printed illustration; no materialization."
+            }
+          },
+          "continuidad": {
+            "inicio": "Both stand at the catalog table; no physical toy exists in the scene.",
+            "acciones": [
+              "She points to the illustration.",
+              "She makes the promise.",
+              "He acknowledges it."
+            ],
+            "fin": "The friend knows her promise, but she has not received any prize.",
+            "reglas": "Printed depiction only. Keep wardrobe and opaque tote consistent."
+          }
+        },
+        {
+          "id": "t02",
+          "titulo": "Recibir y guardar en privado",
+          "descripcion": "Later, an attendant gives her one jaguar plush without the friend present. She hides it in her opaque tote and leaves the counter.",
+          "duracion": 8,
+          "personajes": [
+            "PROTA"
+          ],
+          "imagenes": [
+            {
+              "id": "1",
+              "prompt": "Initial PRE-HANDOFF frame: attendant still holds ONE jaguar plush. Woman has a free receiving hand and an open opaque tote against her torso. The friend is absent from foreground and background."
+            }
+          ],
+          "variantes": {
+            "A": {
+              "primer": "1",
+              "ultimo": null,
+              "movimiento": "0-2 s: attendant gives her ONE plush once. 2-5 s: she fully places that same toy in the opaque tote and closes its top. 5-8 s: she leaves the counter, closed tote in front of her body. Friend never witnesses the transfer. No dialogue; no toy parts protrude."
+            }
+          },
+          "continuidad": {
+            "inicio": "Attendant has the toy; woman has open tote; friend absent.",
+            "acciones": [
+              "One handoff.",
+              "She lowers the toy fully into the tote.",
+              "She closes it completely.",
+              "She leaves toward the meeting area."
+            ],
+            "fin": "One toy is invisible in the closed opaque tote; friend has not seen it.",
+            "reglas": "One delivery only. Friend absent. Opaque fabric; no toy parts protrude."
+          }
+        },
+        {
+          "id": "t03",
+          "titulo": "Pregunta antes de revelar",
+          "descripcion": "Friend arrives unaware of redemption. The opaque closed tote hides the toy fully. He asks first, then she opens it and reveals the single jaguar.",
+          "duracion": 12,
+          "personajes": [
+            "PROTA",
+            "AMIGO"
+          ],
+          "imagenes": [
+            {
+              "id": "inicio-oculto",
+              "prompt": "Initial frame BEFORE question and reveal: woman holds SAME fully CLOSED OPAQUE tote in front of her body. Jaguar inside COMPLETELY INVISIBLE, with no ears, paws, tail, outline or reflection. Friend just arrived and looks at her face. Natural poised hands, bag still closed."
+            }
+          ],
+          "variantes": {
+            "A": {
+              "primer": "inicio-oculto",
+              "ultimo": null,
+              "movimiento": "0-3 s: friend asks: 'So, where is your jaguar?' Bag stays closed and toy hidden until the whole question ends. 3-4 s: woman gives a knowing smile. 4-7 s: she opens the tote once and removes ONE plush once. 7-12 s: showing it, she says: 'I told you I would earn it. Here it is!' He sees it for the first time. No repeated extraction or duplicate toy."
+            }
+          },
+          "continuidad": {
+            "inicio": "Same tote closed in front of her body, toy hidden; friend unaware.",
+            "acciones": [
+              "He finishes the question.",
+              "She smiles, bag still closed.",
+              "She opens it and extracts one toy.",
+              "She shows it and answers."
+            ],
+            "fin": "One reveal completed; toy visible, open tote stays on her arm.",
+            "reglas": "NO TOY VISIBLE IN FIRST FRAME. Finish question before opening or revealing. One extraction; no mandatory final-frame image."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -19,10 +19,10 @@ from importlib.resources import files
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import costos, generacion, limpieza, produccion, receta
+from . import costos, exportacion, generacion, limpieza, produccion, receta
 from .comfy import Cliente, ErrorComfy
 
-MEDIOS = {".mp4", ".webm", ".mov", ".png", ".jpg", ".jpeg", ".gif", ".webp"}
+MEDIOS = {".mp4", ".webm", ".mov", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".zip"}
 IGNORAR = {"salidas", "node_modules", ".git", ".venv", "venv", "__pycache__", "web"}
 MAX_RECETAS = 500
 MAX_SUBIDA = 25 * 1024 * 1024
@@ -62,7 +62,7 @@ class Estudio:
     def producciones(self):
         lista = []
         for ruta in self.producciones_rutas():
-            rel = str(ruta.relative_to(self.carpeta)) or "."
+            rel = ruta.relative_to(self.carpeta).as_posix() or "."
             try:
                 lista.append({"id": rel, "titulo": produccion.Produccion(ruta).titulo, "error": None})
             except (produccion.ErrorProduccion, ValueError) as e:
@@ -84,14 +84,15 @@ class Estudio:
     def vista_produccion(self, pid):
         prod = self.produccion(pid)
         datos = prod.vista(self._catalogo())
-        base = str(prod.carpeta.relative_to(self.carpeta))
+        exportacion.ampliar_vista(prod, datos)
+        base = prod.carpeta.relative_to(self.carpeta).as_posix()
         datos["id"] = pid
         prefijo = "" if base == "." else base + "/"
 
         def ajustar(x):
             # Rutas relativas a la producción → relativas a la carpeta del panel (las que sirve /archivo).
             if isinstance(x, dict):
-                return {k: (prefijo + v if k in ("archivo", "animatica") and isinstance(v, str) else
+                return {k: (prefijo + v if k in ("archivo", "animatica", "video_final", "video_revision", "paquete", "archivo_editado") and isinstance(v, str) else
                             {kk: prefijo + vv if vv else vv for kk, vv in v.items()} if k == "referencias_archivos" else ajustar(v))
                         for k, v in x.items()}
             if isinstance(x, list):
@@ -120,7 +121,7 @@ class Estudio:
         return {"recetas": lista, "catalogo": error_cat}
 
     def _receta(self, ruta, datos, cat):
-        rel = str(ruta.relative_to(self.carpeta))
+        rel = ruta.relative_to(self.carpeta).as_posix()
         item = {"ruta": rel, "huella": huella(ruta), "nombre": datos.get("nombre"), "tipo": datos.get("tipo", "video"),
                 "modelo": datos.get("modelo") or (receta.MODELO_VIDEO if datos.get("tipo", "video") == "video" else None),
                 "duracion": datos.get("duracion"), "max_usd": datos.get("max_usd"), "prompt": datos.get("prompt", ""),
@@ -151,7 +152,7 @@ class Estudio:
             return []
         patron = re.compile(rf"{re.escape(nombre)}(-\d+)?(\.hoja)?\.[a-z0-9]+$", re.I)
         archivos = [p for p in carpeta.iterdir() if p.is_file() and p.suffix.lower() in MEDIOS and patron.fullmatch(p.name)]
-        return [{"ruta": str(p.relative_to(self.carpeta)), "nombre": p.name, "bytes": p.stat().st_size,
+        return [{"ruta": p.relative_to(self.carpeta).as_posix(), "nombre": p.name, "bytes": p.stat().st_size,
                  "tipo": "video" if p.suffix.lower() in {".mp4", ".webm", ".mov"} else "imagen",
                  "hoja": p.name.endswith(".hoja.png"), "fecha": p.stat().st_mtime}
                 for p in sorted(archivos, key=lambda p: p.stat().st_mtime, reverse=True)]
@@ -224,6 +225,35 @@ class Estudio:
         self.produccion(pid)
         return self._lanzar(f"{pid}: animática", 0, lambda confirmar, avisar: {"archivo": str(
             self.produccion(pid).animatica(avisar=avisar))}, lambda: True, True, gasta=False)
+
+    def iniciar_montaje(self, pid):
+        prod = self.produccion(pid)
+        if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+            raise ValueError("El video final necesita ffmpeg y ffprobe")
+        faltas = prod.vista()["montaje"]["faltas"]
+        if faltas:
+            raise ValueError("Antes de montar: " + "; ".join(faltas))
+        return self._lanzar(f"{pid}: video final", 0, lambda confirmar, avisar: {"archivo": str(
+            self.produccion(pid).montar(avisar=avisar))}, lambda: True, True, gasta=False)
+
+    def iniciar_revision(self, pid):
+        self.produccion(pid)
+        if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+            raise ValueError("La revisión continua necesita ffmpeg y ffprobe")
+        return self._lanzar(f"{pid}: revisión continua", 0, lambda confirmar, avisar: {"archivo": str(
+            self.produccion(pid).montar_revision(avisar=avisar))}, lambda: True, True, gasta=False)
+
+    def iniciar_exportacion(self, pid, revision=False, tid=None):
+        self.produccion(pid)
+        if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+            raise ValueError("Exportar necesita ffmpeg y ffprobe")
+        def correr(confirmar, avisar):
+            prod = self.produccion(pid)
+            archivo = (exportacion.clip_editado(prod, tid, revision=revision, avisar=avisar) if tid is not None
+                       else exportacion.paquete(prod, revision=revision, avisar=avisar))
+            return {"archivo": archivo.relative_to(self.carpeta).as_posix(), "costo_usd": 0}
+        nombre = f"clip editado {tid}" if tid is not None else "descarga de todos los videos"
+        return self._lanzar(f"{pid}: {nombre}", 0, correr, lambda: True, True, gasta=False)
 
     def _lanzar(self, nombre, aprobado_usd, trabajo_fn, vigente, sin_estimado, gasta=True):
         aprobado = float(aprobado_usd or 0)
@@ -345,6 +375,8 @@ def crear_manejador(estudio, pagina):
             self.send_header("Content-Length", str(fin - inicio + 1 if tam else 0))
             self.send_header("Accept-Ranges", "bytes")
             self.send_header("Cache-Control", "no-store")
+            if ruta.suffix.lower() == ".zip":
+                self.send_header("Content-Disposition", f'attachment; filename="{ruta.name}"')
             if estado == HTTPStatus.PARTIAL_CONTENT:
                 self.send_header("Content-Range", f"bytes {inicio}-{fin}/{tam}")
             self.end_headers()
@@ -357,7 +389,10 @@ def crear_manejador(estudio, pagina):
                     trozo = f.read(min(1 << 20, falta))
                     if not trozo:
                         break
-                    self.wfile.write(trozo)
+                    try:
+                        self.wfile.write(trozo)
+                    except (BrokenPipeError, ConnectionResetError):
+                        return  # El navegador canceló la descarga al mover el reproductor o cerrar la vista.
                     falta -= len(trozo)
 
         def do_POST(self):
@@ -393,6 +428,25 @@ def crear_manejador(estudio, pagina):
                     elif accion == "variante":
                         prod.editar_variante(datos.get("toma", ""), datos.get("variante", ""), datos.get("primer"),
                                              datos.get("ultimo"), datos.get("movimiento"))
+                    elif accion in ("montaje_config", "montaje_toma"):
+                        with estudio.cerrojo:
+                            if estudio.trabajo and estudio.trabajo["estado"] == "en curso":
+                                raise ValueError("Espera a que termine el trabajo antes de editar el montaje")
+                            if accion == "montaje_config":
+                                prod.configurar_montaje(fundido=datos.get("fundido", 0.35))
+                            else:
+                                prod.editar_montaje(datos.get("toma", ""), inicio=datos.get("inicio", 0),
+                                                    fin=datos.get("fin"), omitida=datos.get("omitida", False),
+                                                    silenciar=datos.get("silenciar", False), quitar=datos.get("quitar"))
+                    elif accion == "correccion":
+                        prod.pedir_correccion(datos.get("toma", ""), datos.get("variante", ""), datos.get("nota", ""))
+                    elif accion == "continuidad":
+                        with estudio.cerrojo:
+                            if estudio.trabajo and estudio.trabajo["estado"] == "en curso":
+                                raise ValueError("Espera a que termine el trabajo antes de editar la historia")
+                            prod.editar_continuidad(datos.get("toma", ""), inicio=datos.get("inicio", ""),
+                                                   acciones=datos.get("acciones", []), fin=datos.get("fin", ""),
+                                                   reglas=datos.get("reglas", ""))
                     else:
                         return self.error(HTTPStatus.BAD_REQUEST, "Acción desconocida")
                     return self.json({"ok": True})
@@ -404,6 +458,16 @@ def crear_manejador(estudio, pagina):
                     return self.json(t, HTTPStatus.ACCEPTED)
                 if ruta == "/api/produccion/animatica":
                     return self.json(estudio.iniciar_animatica(datos.get("id", "")), HTTPStatus.ACCEPTED)
+                if ruta == "/api/produccion/montar":
+                    return self.json(estudio.iniciar_montaje(datos.get("id", "")), HTTPStatus.ACCEPTED)
+                if ruta == "/api/produccion/montar-revision":
+                    return self.json(estudio.iniciar_revision(datos.get("id", "")), HTTPStatus.ACCEPTED)
+                if ruta in ("/api/produccion/paquete", "/api/produccion/clip-editado"):
+                    if type(datos.get("revision", False)) is not bool:
+                        raise ValueError("Revisión debe ser un valor booleano")
+                    tid = datos.get("toma", "") if ruta.endswith("clip-editado") else None
+                    return self.json(estudio.iniciar_exportacion(datos.get("id", ""), revision=datos.get("revision", False),
+                                                                tid=tid), HTTPStatus.ACCEPTED)
                 if ruta == "/api/saldo":
                     return self.json({"saldo_usd": estudio.cliente.saldo()})
                 if ruta == "/api/generar":
@@ -422,11 +486,11 @@ def crear_manejador(estudio, pagina):
                         hoja = video.with_suffix(".hoja.png")
                         info, errores, silencios = limpieza.revisar(video, hoja)
                         return self.json({"info": info, "errores": errores, "silencios": silencios,
-                                          "hoja": str(hoja.relative_to(estudio.carpeta)),
+                                          "hoja": hoja.relative_to(estudio.carpeta).as_posix(),
                                           "aviso": "Falta que una persona escuche el audio y apruebe el resultado."})
                     destino = video.with_name(video.stem + "-ultimo.png")
                     limpieza.ultimo_cuadro(video, destino)
-                    return self.json({"imagen": str(destino.relative_to(estudio.carpeta))})
+                    return self.json({"imagen": destino.relative_to(estudio.carpeta).as_posix()})
                 return self.error(HTTPStatus.NOT_FOUND, "No existe")
             except ErrorComfy as e:
                 return self.error(HTTPStatus.BAD_GATEWAY, str(e))

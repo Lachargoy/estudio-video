@@ -32,9 +32,9 @@ PNG = _png()
 def nueva(carpeta, **cambios):
     produccion.crear(carpeta)
     ruta = Path(carpeta) / "produccion.json"
-    datos = json.loads(ruta.read_text())
+    datos = json.loads(ruta.read_text(encoding="utf-8"))
     datos.update(cambios)
-    ruta.write_text(json.dumps(datos))
+    ruta.write_text(json.dumps(datos), encoding="utf-8")
     return Produccion(carpeta)
 
 
@@ -56,7 +56,7 @@ class Formato(Base):
     def test_errores_de_estructura(self):
         nueva(self.carpeta)
         ruta = self.carpeta / "produccion.json"
-        base = json.loads(ruta.read_text())
+        base = json.loads(ruta.read_text(encoding="utf-8"))
         casos = [
             (lambda d: d["secuencias"][0]["tomas"][0]["personajes"].append("NADIE"), "personaje que no existe"),
             (lambda d: d["secuencias"][0]["tomas"][0]["variantes"]["A"].update(primer="9"), "imagen que no existe"),
@@ -67,7 +67,7 @@ class Formato(Base):
         for cambio, texto in casos:
             datos = json.loads(json.dumps(base))
             cambio(datos)
-            ruta.write_text(json.dumps(datos))
+            ruta.write_text(json.dumps(datos), encoding="utf-8")
             with self.assertRaisesRegex(ErrorProduccion, texto):
                 Produccion(self.carpeta)
 
@@ -128,12 +128,12 @@ class Flujo(Base):
     @unittest.skipUnless(shutil.which("ffmpeg"), "necesita ffmpeg")
     def test_animatica_con_clip_imagen_y_negro(self):
         p = nueva(self.carpeta)
-        datos = json.loads((self.carpeta / "produccion.json").read_text())
+        datos = json.loads((self.carpeta / "produccion.json").read_text(encoding="utf-8"))
         toma2 = json.loads(json.dumps(datos["secuencias"][0]["tomas"][0]))
         toma3 = dict(toma2, id="t03")
         toma2["id"] = "t02"
         datos["secuencias"][0]["tomas"] += [toma2, toma3]
-        (self.carpeta / "produccion.json").write_text(json.dumps(datos))
+        (self.carpeta / "produccion.json").write_text(json.dumps(datos), encoding="utf-8")
         p = Produccion(self.carpeta)
         (self.carpeta / "clips").mkdir()
         subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=24", "-t", "6",

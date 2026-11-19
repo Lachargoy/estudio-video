@@ -14,13 +14,20 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from . import costos, receta
+from . import costos, montaje, receta
 
 ARCHIVO = "produccion.json"
 ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,40}")
 IMAGENES = (".png", ".jpg", ".jpeg", ".webp")
 VIDEO_DEFECTO = {"modelo": receta.MODELO_VIDEO, "resolucion": "2K", "formato": "16:9", "audio": True, "max_usd_clip": 2.0}
 ESTADOS = ("pendiente", "aprobada", "descartada")
+REGLAS_CONTINUIDAD = (
+    "Respect the established state at the start; do not restart completed actions. "
+    "Keep hidden objects and characters hidden until their explicit reveal cue. "
+    "Show the cause or action before its reaction, in the listed order. "
+    "Speak each scripted line only once, only in its assigned shot and at its specified cue. "
+    "Do not speak dialogue mentioned only as neighboring-shot context."
+)
 
 
 class ErrorProduccion(ValueError):
@@ -47,6 +54,24 @@ def _id(valor, que):
     return valor
 
 
+def _continuidad(valor, que):
+    if not isinstance(valor, dict):
+        raise ErrorProduccion(f"{que}: continuidad debe ser un objeto")
+    if set(valor) - {"inicio", "acciones", "fin", "reglas"}:
+        raise ErrorProduccion(f"{que}: continuidad admite inicio, acciones, fin y reglas")
+    resultado = {}
+    for campo in ("inicio", "fin", "reglas"):
+        texto = valor.get(campo, "")
+        if not isinstance(texto, str):
+            raise ErrorProduccion(f"{que}: continuidad.{campo} debe ser texto")
+        resultado[campo] = texto.strip()
+    acciones = valor.get("acciones", [])
+    if not isinstance(acciones, list) or any(not isinstance(a, str) or not a.strip() for a in acciones):
+        raise ErrorProduccion(f"{que}: continuidad.acciones debe ser una lista de textos no vacíos")
+    resultado["acciones"] = [a.strip() for a in acciones]
+    return resultado
+
+
 class Produccion:
     def __init__(self, carpeta):
         self.carpeta = Path(carpeta).resolve()
@@ -65,6 +90,9 @@ class Produccion:
         d["video"] = {**VIDEO_DEFECTO, **(d.get("video") or {})}
         d.setdefault("estilo", "")
         d.setdefault("negativo", "")
+        d.setdefault("continuidad", "")
+        if not isinstance(d["continuidad"], str):
+            raise ErrorProduccion("La continuidad global debe ser texto")
         d.setdefault("personajes", [])
         personajes = set()
         for p in d["personajes"]:
@@ -85,6 +113,7 @@ class Produccion:
                 tomas.add(tid)
                 t.setdefault("titulo", tid)
                 t.setdefault("descripcion", "")
+                t["continuidad"] = _continuidad(t.get("continuidad", {}), f"Toma {tid}")
                 if not isinstance(t.get("duracion"), (int, float)) or t["duracion"] <= 0:
                     raise ErrorProduccion(f"La toma {tid} necesita «duracion» en segundos")
                 for pid in t.setdefault("personajes", []):
@@ -136,6 +165,18 @@ class Produccion:
         base = {"personajes": {}, "imagenes": {}, "clips": {}, "corte": {}, "animatica": None}
         if ruta.is_file():
             base.update(json.loads(ruta.read_text(encoding="utf-8")))
+        # Las primeras versiones de Windows guardaban separadores de sistema.
+        def normalizar(valor):
+            if isinstance(valor, dict):
+                for clave, dato in valor.items():
+                    if clave == "archivo" and isinstance(dato, str):
+                        valor[clave] = dato.replace("\\", "/")
+                    else:
+                        normalizar(dato)
+            elif isinstance(valor, list):
+                for dato in valor:
+                    normalizar(dato)
+        normalizar(base)
         return base
 
     def guardar_estado(self):
@@ -159,7 +200,7 @@ class Produccion:
         return self._buscar(f"personajes/{pid}", vista, IMAGENES)
 
     def rel(self, ruta):
-        return str(Path(ruta).relative_to(self.carpeta)) if ruta else None
+        return Path(ruta).relative_to(self.carpeta).as_posix() if ruta else None
 
     def _estado_pieza(self, grupo, clave, archivo):
         e = self.estado[grupo].get(clave)
@@ -287,7 +328,194 @@ class Produccion:
             v["movimiento"] = str(movimiento)
         self.guardar_estructura()
 
+    def pedir_correccion(self, tid, vid, nota):
+        """Prepara otra versión sin retirar ni alterar el clip actual del corte."""
+        toma = self.toma(tid)
+        if vid not in toma["variantes"]:
+            raise ErrorProduccion(f"La toma {tid} no tiene la variante {vid}")
+        if not isinstance(nota, str) or not nota.strip():
+            raise ErrorProduccion("Escribe qué quieres corregir en el video")
+        if len(nota) > 12000:
+            raise ErrorProduccion("La nota de corrección es demasiado larga")
+        clave = f"{tid}/{vid}"
+        archivo = self.archivo_clip(tid, vid)
+        if archivo is None:
+            raise ErrorProduccion("No hay un clip que corregir")
+        e = self._estado_pieza("clips", clave, archivo)
+        e.update(nota=nota.strip(), correccion_pendiente=True, fecha_correccion=_ahora())
+        self.guardar_estado()
+
+    def editar_continuidad(self, tid, inicio="", acciones=None, fin="", reglas=""):
+        """Actualiza estados y acciones sin generar, aprobar ni retirar ningún clip."""
+        toma = self.toma(tid)
+        nueva = _continuidad({"inicio": inicio, "acciones": [] if acciones is None else acciones,
+                              "fin": fin, "reglas": reglas}, f"Toma {tid}")
+        if nueva == toma["continuidad"]:
+            return
+        orden = [t for _, t in self.tomas()]
+        indice = next(i for i, t in enumerate(orden) if t["id"] == tid)
+        afectadas = orden[max(0, indice - 1):indice + 2]
+        antes = {(t["id"], vid): self.prompt_video(t["id"], vid)
+                 for t in afectadas for vid in t["variantes"]}
+        toma["continuidad"] = nueva
+        self.guardar_estructura()
+        for t in afectadas:
+            for vid in t["variantes"]:
+                if antes[(t["id"], vid)] == self.prompt_video(t["id"], vid):
+                    continue
+                archivo = self.archivo_clip(t["id"], vid)
+                if archivo is not None:
+                    e = self._estado_pieza("clips", f"{t['id']}/{vid}", archivo)
+                    e.update(instrucciones_actualizadas=True, fecha_instrucciones=_ahora())
+        self.guardar_estado()
+
+    # Montaje no destructivo -------------------------------------------------
+    def configurar_montaje(self, fundido=0.35):
+        try:
+            fundido = montaje.numero(fundido, "El fundido")
+            if not 0 <= fundido <= 2:
+                raise montaje.ErrorMontaje("El fundido debe estar entre 0 y 2 segundos")
+        except montaje.ErrorMontaje as exc:
+            raise ErrorProduccion(str(exc)) from None
+        self.estado.setdefault("montaje", {"tomas": {}})["fundido"] = fundido
+        self.guardar_estado()
+
+    def editar_montaje(self, tid, inicio=0, fin=None, omitida=False, silenciar=False, quitar=None):
+        toma = self.toma(tid)
+        try:
+            edicion = montaje.validar_edicion(inicio, fin, omitida, silenciar, quitar, toma["duracion"])
+        except montaje.ErrorMontaje as exc:
+            raise ErrorProduccion(str(exc)) from None
+        self.estado.setdefault("montaje", {"fundido": 0.35, "tomas": {}}).setdefault("tomas", {})[tid] = edicion
+        self.guardar_estado()
+
+    def _seleccion_montaje(self, toma, revision=False):
+        elegido = self.estado["corte"].get(toma["id"])
+        orden = [elegido] if elegido is not None else list(toma["variantes"])
+        for vid in orden:
+            if vid not in toma["variantes"]:
+                continue
+            archivo = self.archivo_clip(toma["id"], vid)
+            if archivo and self._estado_pieza("clips", f"{toma['id']}/{vid}", archivo)["estado"] in (("aprobada", "pendiente") if revision else ("aprobada",)):
+                return vid, archivo
+        return elegido, None
+
+    def vista_montaje(self, revision=False):
+        config = self.estado.get("montaje") or {}
+        fundido = config.get("fundido", 0.35)
+        tomas, faltas, duraciones, fuentes = [], [], [], []
+        for _, toma in self.tomas():
+            tid = toma["id"]
+            try:
+                edicion = montaje.validar_edicion(**config.get("tomas", {}).get(tid, {}), limite=toma["duracion"])
+                duracion = montaje.duracion_editada(edicion, toma["duracion"]) if not edicion["omitida"] else 0.0
+            except (montaje.ErrorMontaje, TypeError) as exc:
+                edicion = {"inicio": 0, "fin": None, "omitida": False, "silenciar": False, "quitar": []}
+                duracion = toma["duracion"]
+                faltas.append(f"{tid}: revisa el recorte ({exc})")
+            vid, archivo = self._seleccion_montaje(toma, revision)
+            imagen = False
+            if revision and archivo is None:
+                for im in toma["imagenes"]:
+                    candidata = self.archivo_imagen(tid, im["id"])
+                    if candidata and self._estado_pieza("imagenes", f"{tid}/{im['id']}", candidata)["estado"] in ("pendiente", "aprobada"):
+                        archivo, imagen = candidata, True
+                        break
+            tomas.append({"id": tid, "titulo": toma["titulo"], **edicion,
+                          "archivo": self.rel(archivo), "variante": vid, "duracion": toma["duracion"],
+                          "duracion_corte": round(duracion, 4), "imagen": imagen})
+            if edicion["omitida"]:
+                continue
+            if archivo is None:
+                faltas.append(f"{tid}: falta " + ("clip o imagen para revisar" if revision else "un clip aprobado") +
+                              (f" de la variante {vid}" if vid else ""))
+            else:
+                stat = archivo.stat()
+                fuentes.append({"id": tid, "archivo": self.rel(archivo), "bytes": stat.st_size, "mtime": stat.st_mtime_ns})
+            duraciones.append(duracion)
+        if not duraciones:
+            faltas.append("Incluye al menos una toma en el video final")
+        try:
+            fundido = montaje.numero(fundido, "El fundido")
+            if not 0 <= fundido <= 2:
+                raise montaje.ErrorMontaje("El fundido debe estar entre 0 y 2 segundos")
+        except montaje.ErrorMontaje as exc:
+            faltas.append(str(exc))
+            fundido = 0.35
+        fundido_real = montaje.transicion(duraciones, fundido) if duraciones else 0
+        duracion = sum(duraciones) - fundido_real * max(0, len(duraciones) - 1)
+        huella = self.huella({"fundido": fundido, "tomas": tomas, "fuentes": fuentes})
+        clave_video = "video_revision" if revision else "video_final"
+        nombre_video = "video-revision.mp4" if revision else "video-final.mp4"
+        anterior = self.estado.get(clave_video) or {}
+        actualizado = not faltas and anterior.get("huella") == huella and (self.carpeta / "animatica" / nombre_video).is_file()
+        return {"fundido": fundido, "fundido_real": fundido_real, "tomas": tomas, "faltas": faltas,
+                "duracion": round(duracion, 4), "actualizado": bool(actualizado), "huella": huella,
+                "duracion_real": anterior.get("duracion") if actualizado else None}
+
+    def montar_revision(self, avisar=print):
+        """Copia de revisión: incluye pendientes y señala imágenes fijas; nunca aprueba piezas."""
+        return self.montar(avisar=avisar, revision=True)
+
+    def montar(self, avisar=print, revision=False):
+        """Un video con los clips aprobados, en orden de guion, y sus ediciones locales."""
+        if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+            raise ErrorProduccion("El montaje necesita ffmpeg y ffprobe")
+        plan = self.vista_montaje(revision=revision)
+        if plan["faltas"]:
+            raise ErrorProduccion("Antes de montar: " + "; ".join(plan["faltas"]))
+        tomas = [{"id": t["id"], "archivo": self.carpeta / t["archivo"], "duracion": t["duracion"], "imagen": t["imagen"],
+                  "edicion": {k: t[k] for k in ("inicio", "fin", "omitida", "silenciar", "quitar")}}
+                 for t in plan["tomas"] if not t["omitida"]]
+        destino = self.carpeta / "animatica"
+        destino.mkdir(exist_ok=True)
+        nombre = "video-revision" if revision else "video-final"
+        clave_video = "video_revision" if revision else "video_final"
+        final = destino / f"{nombre}.mp4"
+        with tempfile.TemporaryDirectory(prefix="exportar-", dir=destino) as tmp:
+            temporal = Path(tmp) / "video-final.mp4"
+            try:
+                resultado = montaje.renderizar(tomas, temporal, plan["fundido"], avisar)
+            except montaje.ErrorMontaje as exc:
+                raise ErrorProduccion(str(exc)) from None
+            # Leer de nuevo evita pisar decisiones guardadas mientras se renderizaba.
+            vigente = Produccion(self.carpeta)
+            anterior = vigente.estado.get(clave_video) or {}
+            historial = list(anterior.get("historial", []))
+            if final.is_file():
+                carpeta = destino / "anteriores"
+                carpeta.mkdir(exist_ok=True)
+                copia = carpeta / f"{nombre}-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')}.mp4"
+                shutil.copy2(final, copia)
+                historial.append({"archivo": self.rel(copia), "fecha": anterior.get("fecha"), "duracion": anterior.get("duracion")})
+            os.replace(temporal, final)
+            vigente.estado[clave_video] = {"archivo": self.rel(final), "fecha": _ahora(), "huella": plan["huella"],
+                                             **resultado, "historial": historial}
+            vigente.guardar_estado()
+            self.estado = vigente.estado
+        avisar(f"Video {'de revisión' if revision else 'final'} listo: {self.rel(final)} · {resultado['duracion']:.2f} s. Falta escuchar y revisar el resultado.")
+        return final
+
     # Prompts ----------------------------------------------------------------
+    def _prompt_continuidad(self, toma):
+        continuidad = toma["continuidad"]
+        partes = ["TEMPORAL CONTINUITY (authoritative timing; scene descriptions do not reveal later actions at the start):"]
+        if continuidad["inicio"]:
+            partes.append("STATE AT START: " + continuidad["inicio"])
+        if continuidad["acciones"]:
+            partes.append("ACTION ORDER:\n" + "\n".join(f"{i}. {accion}" for i, accion in enumerate(continuidad["acciones"], 1)))
+        if continuidad["fin"]:
+            partes.append("STATE AT END: " + continuidad["fin"])
+        reglas = [REGLAS_CONTINUIDAD, self.datos["continuidad"].strip(), continuidad["reglas"]]
+        partes.append("CONTINUITY RULES: " + "\n".join(regla for regla in reglas if regla))
+        orden = [t for _, t in self.tomas()]
+        indice = next(i for i, t in enumerate(orden) if t["id"] == toma["id"])
+        if indice and orden[indice - 1]["continuidad"]["fin"]:
+            partes.append("PREVIOUS SHOT END (already happened; do not repeat): " + orden[indice - 1]["continuidad"]["fin"])
+        if indice + 1 < len(orden) and orden[indice + 1]["continuidad"]["inicio"]:
+            partes.append("NEXT SHOT START (handoff only; do not perform the next shot here): " + orden[indice + 1]["continuidad"]["inicio"])
+        return "\n".join(partes)
+
     def _elenco(self, toma):
         partes = []
         for pid in toma["personajes"]:
@@ -298,7 +526,9 @@ class Produccion:
     def prompt_imagen(self, tid, iid):
         t = self.toma(tid)
         im = next(x for x in t["imagenes"] if x["id"] == iid)
-        partes = [self.datos["estilo"], f"Scene: {t['descripcion']}", f"Frame: {im['prompt']}"]
+        partes = [self.datos["estilo"], f"Scene: {t['descripcion']}", f"Frame: {im['prompt']}",
+                  self._prompt_continuidad(t),
+                  "STILL FRAME TIMING: depict only the requested Frame; never combine start and end states in one image."]
         elenco = self._elenco(t)
         if elenco:
             partes.append("Characters (keep their exact look): " + " | ".join(elenco))
@@ -312,7 +542,8 @@ class Produccion:
     def prompt_video(self, tid, vid):
         t = self.toma(tid)
         v = t["variantes"][vid]
-        partes = [self.datos["estilo"], t["descripcion"], f"Motion: {v['movimiento']}" if v["movimiento"] else ""]
+        partes = [self.datos["estilo"], t["descripcion"], f"Motion: {v['movimiento']}" if v["movimiento"] else "",
+                  self._prompt_continuidad(t)]
         elenco = self._elenco(t)
         if elenco:
             partes.append("Characters (keep their exact look): " + " | ".join(elenco))
@@ -409,6 +640,7 @@ class Produccion:
 
     def vista(self, catalogo=None):
         """Todo lo que el panel muestra, ya resuelto: archivos, estados, prompts, estimados y pendientes."""
+        estado_inicial = self.huella(self.estado)
         imgs_total = imgs_ok = clips_total = clips_ok = 0
         pendientes_revision = 0
         siguiente = []
@@ -441,18 +673,24 @@ class Produccion:
                     clips_ok += e["estado"] == "aprobada"
                     pendientes_revision += e["estado"] == "pendiente"
                     variantes.append({"id": vid, **v, "archivo": self.rel(archivo), "estado": e["estado"], "nota": e.get("nota"),
+                                      "correccion_pendiente": bool(e.get("correccion_pendiente")),
+                                      "instrucciones_actualizadas": bool(e.get("instrucciones_actualizadas")),
                                       "costo_usd": e.get("costo_usd"), "versiones": len(e.get("historial", [])),
                                       "historial": e.get("historial", []), "estimado_usd": estimado, "max_usd": r["max_usd"],
                                       "duracion_generada": r["duracion"], "faltas": faltas, "huella": self.huella(r),
                                       "prompt_completo": r["prompt"], "en_corte": self.estado["corte"].get(t["id"]) == vid})
-                tomas.append({**{k: t[k] for k in ("id", "titulo", "descripcion", "duracion", "personajes")},
+                tomas.append({**{k: t[k] for k in ("id", "titulo", "descripcion", "duracion", "personajes", "continuidad")},
                               "imagenes": imagenes, "variantes": variantes})
             secuencias.append({"id": s["id"], "titulo": s["titulo"], "descripcion": s.get("descripcion", ""), "tomas": tomas})
         guion = self.carpeta / "guion.md"
-        self.guardar_estado()  # fija como pendientes los archivos nuevos detectados
+        plan = self.vista_montaje()
+        plan_revision = self.vista_montaje(revision=True)
+        if self.huella(self.estado) != estado_inicial:
+            self.guardar_estado()  # fija como pendientes solo los archivos nuevos detectados
         anim = self.carpeta / "animatica" / "animatica.mp4"
         return {
             "titulo": self.titulo, "descripcion": self.datos.get("descripcion", ""), "estilo": self.datos["estilo"],
+            "continuidad": self.datos["continuidad"],
             "video": self.datos["video"], "guion": guion.read_text(encoding="utf-8") if guion.is_file() else "",
             "personajes": personajes, "secuencias": secuencias,
             "resumen": {"imagenes": imgs_total, "imagenes_aprobadas": imgs_ok, "clips": clips_total, "clips_aprobados": clips_ok,
@@ -460,6 +698,10 @@ class Produccion:
                         "personajes_aprobados": sum(p["estado"] == "aprobado" for p in personajes)},
             "siguiente": siguiente[:12], "faltan_imagenes": len(siguiente),
             "animatica": self.rel(anim) if anim.is_file() else None,
+            "video_final": "animatica/video-final.mp4" if (self.carpeta / "animatica/video-final.mp4").is_file() else None,
+            "montaje": plan,
+            "video_revision": "animatica/video-revision.mp4" if (self.carpeta / "animatica/video-revision.mp4").is_file() else None,
+            "montaje_revision": plan_revision,
         }
 
     # Animática ----------------------------------------------------------------

@@ -73,8 +73,16 @@ class Cliente:
         r = self.ejecutar(grafo, 60)
         if "s" not in r.get("outputs", {}):
             raise ErrorComfy(mensaje_error(r) or "No se pudo consultar el saldo")
-        datos = json.loads(r["outputs"]["s"]["text"][0])["response"]["data"]
-        return datos["total_credits"] - datos["total_usage"]
+        try:
+            estado = json.loads(r["outputs"]["s"]["text"][0])
+            if not estado.get("checked"):
+                raise ErrorComfy("Configura la clave de OpenRouter en ComfyUI antes de consultar el saldo")
+            if "error" in estado:
+                raise ErrorComfy("OpenRouter Studio no pudo consultar el saldo; revisa la clave y la conexión")
+            datos = estado["response"]["data"]
+            return datos["total_credits"] - datos["total_usage"]
+        except (KeyError, IndexError, TypeError, ValueError) as e:
+            raise ErrorComfy("OpenRouter Studio devolvió una respuesta de saldo no válida") from e
 
 
 def mensaje_error(resultado):

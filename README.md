@@ -42,10 +42,21 @@ Para un corto o cualquier pieza de varias tomas, con tu propia idea:
 ```bash
 estudio produccion nueva mi-corto --titulo "Mi corto"   # plantilla: guion, estilo, personajes, secuencias y tomas
 estudio produccion estado mi-corto                      # qué falta, con el prompt de cada imagen
+estudio produccion montar mi-corto                      # un video final con transiciones, sin gastar
+estudio produccion revision mi-corto                    # revisión continua con clips pendientes, sin aprobarlos
+estudio produccion paquete mi-corto --revision           # ZIP: video unido, cada clip editado y prompts, gratis
 estudio panel . --abrir                                 # tablero en http://127.0.0.1:4300/
 ```
 
 El tablero muestra el guion, los personajes con sus referencias, cada toma con sus imágenes, sus variantes de video A/B y los clips generados, con versiones anteriores, notas de dirección, costo por clip y animática. Las imágenes se suben ahí o las guarda un agente. Los clips se generan con OpenRouter desde el tablero, solo con imágenes aprobadas y después de que una persona apruebe el monto. Guía completa: [docs/PRODUCCIONES.md](docs/PRODUCCIONES.md).
+
+**Video final** reúne las tomas en el orden del guion con fundidos de imagen y audio. La línea de tiempo permite ajustar el inicio y el final, quitar fragmentos, excluir tomas y silenciarlas, conservando los originales. Estas ediciones y el montaje son locales y no gastan saldo. Para exportar el final debe haber un clip aprobado por cada toma incluida; el panel indica cuáles faltan y avisa si un video exportado quedó desactualizado.
+
+**Pedir corrección** guarda instrucciones para la próxima versión sin borrar el clip actual. Cambiar el contenido de la imagen, por ejemplo quitar un objeto, requiere generar otra versión con un nuevo estimado y aprobación. Quitar los segundos donde aparece se puede hacer en el editor local.
+
+En **Historia y acciones de esta toma** puedes definir cómo empieza, el orden de acciones y cómo termina. Esos estados y los estados de las tomas vecinas entran en el prompt para evitar contradicciones como mostrar un premio antes de la pregunta que provoca su revelación. Cambiar instrucciones deja un aviso en los clips existentes: aplicar el cambio de contenido requiere una nueva versión.
+
+**Descargar todo editado · gratis** prepara un ZIP con el montaje completo, cada toma con sus recortes y audio aplicados, el guion y un JSON con prompts y ajustes. También puedes exportar y descargar una sola toma. Estas operaciones usan ffmpeg local; generar un video nuevo sigue usando OpenRouter con aprobación por toma. **Copiar instrucciones para Codex** permite seguir preparando o corrigiendo la historia con un agente. Hay un ejemplo sin imágenes ni gasto en [ejemplos/continuidad-jaguar/](ejemplos/continuidad-jaguar/).
 
 La pestaña **Recetas sueltas** lista las recetas individuales de la carpeta con su estimado frente al tope, lo gastado y sus resultados, y permite generarlas con la misma aprobación.
 

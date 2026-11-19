@@ -117,7 +117,7 @@ article.toma{background:var(--tarjeta);border-radius:8px;border-left:4px solid v
 .num{position:absolute;top:6px;left:6px;z-index:2;min-width:22px;height:22px;border-radius:11px;padding:0 6px;color:#fff;background:var(--selva);font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .ocupado::after{content:"Subiendo…";position:absolute;inset:0;background:rgba(249,247,242,.85);display:flex;align-items:center;justify-content:center;color:var(--tinta);font-size:12px;z-index:3}
 .tcuerpo{padding:8px 9px 9px;display:flex;flex-direction:column;gap:6px;flex:1}
-.tdesc{font-size:12.5px;font-weight:700;line-height:1.3}
+.tdesc{font-size:12.5px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .tprompt{font-size:11px;color:#2C3A31;background:var(--pozo);border-radius:4px;padding:6px 7px;line-height:1.35;max-height:6.5em;overflow:auto;white-space:pre-wrap}
 .sin-prompts .tprompt{display:none}
 .nota{font-size:11.5px;color:var(--mal);font-weight:700}
@@ -139,6 +139,56 @@ article.toma{background:var(--tarjeta);border-radius:8px;border-left:4px solid v
 .costo{font-size:12px;color:var(--suave);font-variant-numeric:tabular-nums;margin-top:6px}
 .vpie{display:flex;gap:6px;flex-wrap:wrap;padding:9px 11px;border-top:1px solid var(--linea)}
 .animatica video{width:100%;max-height:440px;background:#000;border-radius:8px;margin-top:12px}
+/* Un solo montaje, en el orden de la historia */
+.pasos{display:flex;gap:8px;flex-wrap:wrap;padding:0;list-style:none;margin:18px 0 14px;font-size:12px;font-weight:700;color:var(--suave)}
+.pasos a{display:flex;gap:7px;align-items:center;color:inherit;text-decoration:none;padding:7px 10px;background:var(--tarjeta);border:1px solid var(--linea);border-radius:6px}
+.pasos b{width:21px;height:21px;border-radius:50%;background:var(--selva);color:white;display:grid;place-items:center}
+.montaje{border:1px solid var(--linea);background:white;border-radius:10px;padding:18px;margin:12px 0 20px;scroll-margin-top:65px}
+.montaje h2{font-family:var(--titulo);font-size:25px;line-height:1.2;margin:3px 0 8px}
+.montaje-cab{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.montaje-preview{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr);gap:18px;align-items:start;margin-top:14px}
+.montaje video{display:block;width:100%;max-height:420px;background:#101a14;border-radius:7px}
+.pantalla-vacia{aspect-ratio:16/9;background:var(--selva);color:#d3dbd3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:7px;gap:8px;padding:24px;font-size:13px}
+.pantalla-vacia b{font-family:var(--titulo);color:white;font-size:22px}
+.ajustes-montaje label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700}
+.ajustes-montaje input{width:105px;border:1px solid var(--linea);border-radius:5px;padding:7px;background:white}
+.ajustes-montaje .fila{align-items:end;margin:0 0 10px}
+.linea-tiempo{display:flex;gap:5px;overflow-x:auto;padding:7px 0 12px;margin-top:12px}
+.segmento{min-width:112px;flex:1;border:1px solid #c8d8cb;border-top:4px solid var(--ok);border-radius:6px;background:#edf3ee;padding:9px;text-align:left;font-size:12px}
+.segmento.falta{border-top-color:var(--av);background:var(--av-s)}
+.segmento.omitida{border-top-color:var(--suave);background:var(--tarjeta);color:var(--suave)}
+.segmento strong,.segmento small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+.segmento small{font-size:11px;margin-top:4px}
+.montaje-lista{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.montaje-fila{display:flex;align-items:center;gap:9px;border-top:1px solid var(--linea);padding:9px 0;flex-wrap:wrap;font-size:12.5px}
+.montaje-fila .descripcion-montaje{flex:1;min-width:170px}
+.montaje-fila .descripcion-montaje small{display:block;color:var(--suave);margin-top:2px}
+.montaje-fila.omitida .descripcion-montaje{color:var(--suave);text-decoration:line-through}
+.orden-toma{display:grid;place-items:center;background:var(--tarjeta);border-radius:4px;min-width:25px;height:25px;font-weight:700;color:var(--suave)}
+.montaje details summary{cursor:pointer;font-weight:700;font-size:13px;padding:9px 0}
+#editor-montaje{width:min(700px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto}
+.editor-video{width:100%;max-height:250px;background:#101a14;border-radius:6px;margin:12px 0}
+.editor-campos{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.editor-campos label,.editor-etiqueta{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700}
+.editor-campos input,.intervalo input{width:100%;border:1px solid var(--linea);border-radius:5px;padding:8px;background:white}
+.editor-check{display:flex;align-items:center;gap:8px;font-size:13px;margin:10px 0}
+.editor-check input{width:18px;height:18px;accent-color:var(--selva)}
+.intervalo{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin:9px 0}
+.intervalo label{font-size:11px;display:flex;flex-direction:column;gap:4px}
+.editor-ayuda{font-size:12px;color:var(--suave);line-height:1.5}
+.editor-feedback{font-size:12px;color:var(--ok);min-height:18px;margin:8px 0}
+.continuidad{border:1px solid var(--linea);border-radius:6px;background:var(--papel);margin:12px 0}
+.continuidad>summary{cursor:pointer;padding:10px 12px;font-size:13px;font-weight:700}
+.continuidad-form{padding:0 12px 12px}
+.continuidad-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.continuidad-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;margin-bottom:10px}
+.continuidad-form textarea{width:100%;min-height:75px;background:white;border:1px solid var(--linea);border-radius:5px;padding:8px;resize:vertical;font-size:13px;font-weight:400}
+.continuidad-form textarea[name=acciones]{min-height:105px}
+.descargas-montaje{border-top:1px solid var(--linea);padding-top:13px;margin-top:15px}
+.descargas-montaje .guia{margin:7px 0 0}
+.clip-exportado{font-size:12px;font-weight:700}
+@media(max-width:640px){.continuidad-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.montaje-preview{grid-template-columns:1fr}.montaje{padding:14px}.montaje h2{font-size:23px}}
 /* Trabajo en curso */
 .trabajo{border-radius:8px;padding:12px 14px;margin:14px 0;border:1px solid var(--linea);background:var(--tarjeta);font-size:14px}
 .trabajo.en-curso{background:var(--run-s);border-color:#B7CDE3}
@@ -206,7 +256,7 @@ footer{max-width:1220px;margin:30px auto 40px;padding:0 20px;color:var(--suave);
     <p class="error-texto" id="d-error" hidden></p>
     <label class="aprobar"><input type="checkbox" id="d-aprobar"><span id="d-texto-aprobar"></span></label>
     <div class="pie-dialogo">
-      <button type="submit" class="btn grande" value="cancelar">Cancelar</button>
+      <button type="submit" class="btn grande" value="cancelar" formnovalidate>Cancelar</button>
       <button type="button" class="btn grande barro" id="d-generar" disabled>Generar y gastar</button>
     </div>
   </form>
@@ -214,11 +264,36 @@ footer{max-width:1220px;margin:30px auto 40px;padding:0 20px;color:var(--suave);
 <dialog id="nota" aria-labelledby="n-titulo">
   <form method="dialog" class="dialogo">
     <h2 id="n-titulo">Nota de dirección</h2>
-    <p class="meta">Qué cambiar. Se agrega al prompt de la siguiente versión.</p>
-    <textarea id="n-texto" required></textarea>
+    <p class="meta" id="n-ayuda">Qué cambiar. Se agrega al prompt de la siguiente versión.</p>
+    <textarea id="n-texto" aria-label="Describe la corrección" required></textarea>
+    <p class="error-texto" id="n-error" role="alert" hidden></p>
     <div class="pie-dialogo" style="margin-top:12px">
-      <button type="submit" class="btn grande" value="cancelar">Cancelar</button>
+      <button type="submit" class="btn grande" value="cancelar" formnovalidate>Cancelar</button>
       <button type="button" class="btn grande prim" id="n-ok">Guardar</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="editor-montaje" aria-labelledby="m-titulo">
+  <form class="dialogo" id="m-form">
+    <div class="ceja">Edición local · sin costo</div>
+    <h2 id="m-titulo">Editar toma</h2>
+    <p class="editor-ayuda" id="m-fuente"></p>
+    <div id="m-preview"></div>
+    <label class="editor-check"><input type="checkbox" id="m-incluir">Incluir esta toma en el video final</label>
+    <div class="editor-campos">
+      <label>Conservar desde (s)<input type="number" id="m-inicio" min="0" step="any" required></label>
+      <label>Conservar hasta (s)<input type="number" id="m-fin" min="0" step="any" placeholder="Fin de la toma"></label>
+    </div>
+    <label class="editor-check"><input type="checkbox" id="m-silenciar">Silenciar el audio de esta toma</label>
+    <div class="campo">Quitar fragmentos de esta toma</div>
+    <p class="editor-ayuda">Indica los tiempos en el clip original, dentro del tramo que conservas. Puedes quitar varios fragmentos.</p>
+    <div id="m-intervalos"></div>
+    <button type="button" class="btn" id="m-agregar">+ Quitar otro fragmento</button>
+    <p class="editor-ayuda">Los originales se conservan. Guarda estos ajustes y vuelve a armar el video final para aplicarlos.</p>
+    <p class="error-texto" id="m-error" role="alert" hidden></p>
+    <div class="pie-dialogo" style="margin-top:16px">
+      <button type="button" class="btn grande" id="m-cancelar">Cancelar</button>
+      <button type="submit" class="btn grande prim" id="m-guardar">Guardar ajustes</button>
     </div>
   </form>
 </dialog>
@@ -234,8 +309,20 @@ const COLORES = ["#C2652F", "#3E7F57", "#2C5D8A", "#9A6A12", "#7A4E8C", "#2E8A86
 const ETIQ = {falta: ["Sin imagen", ""], pendiente: ["Por revisar", "av"], aprobada: ["Aprobada", "ok"], descartada: ["Descartada", "mal"],
   aprobado: ["Aprobado", "ok"], cambios: ["Cambios pedidos", "mal"]};
 const chip = e => { const [t, c] = ETIQ[e] || [e, ""]; return `<span class="chip ${c}">${esc(t)}</span>`; };
-let estado = null, saldo = null, abierto = new Set(["personajes"]), sondeo = null, actual = null, prod = null, recarga = Date.now();
-let soloPendiente = false, verPrompts = true;
+let estado = null, saldo = null, abierto = new Set(), sondeo = null, actual = null, prod = null, recarga = Date.now();
+let soloPendiente = false, verPrompts = false, edicionPendiente = null;
+const segundos = n => `${Number(n || 0).toFixed(2).replace(/\.?0+$/, "")} s`;
+function fuenteMontaje(tid) {
+  const final = prod?.montaje?.tomas.find(t => t.id === tid);
+  const revision = prod?.montaje_revision?.tomas.find(t => t.id === tid);
+  return final?.archivo ? {toma: final, revision: false} : {toma: revision || final, revision: true};
+}
+function exportarClipHtml(tid) {
+  const fuente = fuenteMontaje(tid), t = fuente.toma;
+  if (!t?.archivo) return "";
+  return `<button type="button" class="btn" data-exportar-clip="${esc(tid)}" data-revision="${fuente.revision}" ${ocupado() || !estado.ffmpeg ? "disabled" : ""}>${t.archivo_editado && !t.editado_actualizado ? "Volver a exportar clip editado" : "Exportar clip editado"} · gratis</button>
+    ${t.archivo_editado ? `<a class="btn clip-exportado" href="${archivo(t.archivo_editado, recarga)}" download>${t.editado_actualizado ? "Descargar clip editado" : "Descargar clip anterior"}</a>${!t.editado_actualizado ? `<span class="editor-ayuda">Vuelve a exportar para aplicar los cambios.</span>` : ""}` : ""}`;
+}
 
 async function api(ruta, datos, crudo) {
   let o = {};
@@ -251,10 +338,20 @@ function aviso(t) {
   const caja = document.createElement("div"); caja.className = "aviso mal envoltura"; caja.textContent = t;
   $("vista").prepend(caja); setTimeout(() => caja.remove(), 9000);
 }
+function exito(t) {
+  const caja = document.createElement("div"); caja.className = "aviso envoltura"; caja.setAttribute("role", "status"); caja.textContent = t;
+  $("vista").prepend(caja); anunciar(t); setTimeout(() => caja.remove(), 6000);
+}
 const ocupado = () => estado && estado.trabajo && estado.trabajo.estado === "en curso";
 
 async function cargar() {
   try { estado = await api("/api/estado"); } catch (e) { $("vista").innerHTML = `<p class="error-texto envoltura">${esc(e.message)}</p>`; return; }
+  // El sondeo puede actualizar el trabajo sin borrar un formulario o detener un video.
+  const interactuando = document.querySelector("dialog[open]") || document.activeElement?.matches("input,textarea,select") || [...document.querySelectorAll("video")].some(v => !v.paused && !v.ended);
+  if (interactuando && prod) {
+    const trabajo = $("trabajo-panel"); if (trabajo) trabajo.innerHTML = trabajoHtml();
+    clearTimeout(sondeo); sondeo = setTimeout(cargar, 3000); return;
+  }
   $("carpeta").textContent = estado.carpeta;
   const ids = [...estado.producciones.map(p => p.id), "__recetas"];
   const delHash = decodeURIComponent(location.hash.slice(1));
@@ -292,6 +389,99 @@ function soltar(ruta, texto, datos, alt, numero) {
     <input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Subir ${esc(texto)}"></label>`;
 }
 
+function montajeHtml(p) {
+  const m = p.montaje; if (!m) return "";
+  const incluidas = m.tomas.filter(t => !t.omitida);
+  const sinAprobar = incluidas.filter(t => !t.archivo).length;
+  const fijas = (p.montaje_revision?.tomas || []).filter(t => t.imagen && !t.omitida);
+  const faltas = m.faltas || [], esRevision = !p.video_final && !!p.video_revision;
+  const reproducir = p.video_final || p.video_revision;
+  const vigente = !reproducir || (esRevision ? p.montaje_revision?.actualizado : m.actualizado) !== false;
+  const motivo = ocupado() ? "Hay un trabajo en curso" : !estado.ffmpeg ? "Necesita ffmpeg" : faltas.length ? "Revisa las tomas que faltan" : "";
+  const etiqueta = t => t.omitida ? "Fuera del montaje" : !t.archivo ? "Falta clip aprobado" : `Variante ${t.variante || ""} · ${segundos(t.duracion_corte)}${t.silenciar ? " · sin audio" : ""}${t.quitar?.length ? ` · ${t.quitar.length} recortes` : ""}`;
+  return `<section class="montaje" id="montaje" aria-labelledby="titulo-montaje">
+    <div class="montaje-cab"><div><div class="ceja">03 · Montar tu historia</div><h2 id="titulo-montaje">Un solo video, de principio a fin</h2></div>
+      <span class="chip ${faltas.length ? "av" : "ok"}">${incluidas.length} tomas · ${segundos(m.duracion)} aprox.</span></div>
+    <p class="guia">Las tomas siguen el orden del guion, con una transición suave de imagen y sonido entre ellas. Unir, editar y descargar es gratis; generar video nuevo usa OpenRouter con tu aprobación.</p>
+    <div class="montaje-preview"><div>
+      ${reproducir ? `<video src="${archivo(reproducir, recarga)}" controls preload="metadata" aria-label="${esRevision ? "Revisión continua" : "Video final"} de ${esc(p.titulo)}"></video>
+        ${esRevision ? `<p class="editor-ayuda"><b>Revisión continua:</b> incluye clips por revisar. ${fijas.length ? `${fijas.length === 1 ? "Hay 1 toma con imagen fija" : `Hay ${fijas.length} tomas con imagen fija`}: ${fijas.map(t => esc(t.id)).join(", ")}. Falta generar ${fijas.length === 1 ? "su video" : "sus videos"}.` : "Todas las tomas incluidas tienen video."} Revisa la historia completa antes de aprobar las tomas.</p>` : ""}
+        ${!vigente ? `<div class="aviso">Hay cambios sin aplicar. Vuelve a armar el video para actualizar esta versión.</div>` : `<p class="editor-feedback">${esRevision ? "La revisión" : "El video final"} está ${esRevision ? "actualizada" : "actualizado"}.</p>`}
+        <div class="fila"><a class="btn" href="${archivo(reproducir)}" download>Descargar ${esRevision ? "revisión" : vigente ? "video final" : "versión anterior"}</a><button type="button" class="btn" data-revisar="${esc(reproducir)}">Revisar video</button></div>
+        <div class="resultado-accion" aria-live="polite"></div>`
+        : `<div class="pantalla-vacia"><b>Tu historia completa va aquí</b><span>Revisa los clips de cada toma y pulsa «Armar video final».</span></div>`}
+      </div><div class="ajustes-montaje">
+        <form id="transicion-form"><div class="fila"><label>Transición entre tomas (s)<input type="number" id="fundido" min="0" max="2" step="any" value="${esc(m.fundido)}" required></label><button class="btn" type="submit" ${ocupado() ? "disabled" : ""}>Guardar transición</button></div></form>
+        <p class="editor-ayuda">0,35 s da un fundido breve. Usa 0 para un corte directo. Las transiciones reducen un poco la duración total.</p>
+        <button type="button" class="btn grande" id="armar-revision" ${ocupado() || !estado.ffmpeg ? "disabled" : ""}>${p.video_revision ? "Actualizar" : "Crear"} revisión continua · sin costo</button>
+        <p class="editor-ayuda">Ve la historia con los clips pendientes y una imagen fija si falta video. ${p.video_final && p.video_revision ? `<a href="${archivo(p.video_revision)}" download>Descargar revisión</a>` : ""}</p>
+        ${faltas.length ? `<div class="aviso"><p style="margin:0">Puedes crear una revisión continua antes de aprobar las tomas.</p><details data-bloque="faltas-final" ${abierto.has("faltas-final") ? "open" : ""}><summary>${sinAprobar ? `${sinAprobar} ${sinAprobar === 1 ? "toma requiere" : "tomas requieren"} revisión para el final` : "Qué falta para armar el video final"}</summary><ul>${faltas.map(f => `<li>${esc(f)}</li>`).join("")}</ul></details></div>` : `<p class="editor-feedback">Las tomas incluidas están listas para montar.</p>`}
+        ${!estado.ffmpeg ? `<p class="error-texto">Instala ffmpeg para montar y recortar videos.</p>` : ""}
+        <button type="button" class="btn prim grande" id="armar-final" ${motivo ? `disabled title="${esc(motivo)}"` : ""}>${p.video_final ? "Volver a armar video final" : "Armar video final"} · sin costo</button>
+        <p class="editor-ayuda">El video final usa clips aprobados. Los recortes y fundidos se hacen en este equipo.</p>
+      </div></div>
+    <div class="campo">Línea de tiempo · orden del guion</div>
+    <div class="linea-tiempo" aria-label="Tomas de la historia">${m.tomas.map((t, i) => `<button type="button" class="segmento ${t.omitida ? "omitida" : !t.archivo ? "falta" : ""}" data-editar-montaje="${esc(t.id)}" style="flex-grow:${Math.max(.25, Number(t.duracion_corte) || 1)}" aria-label="Editar toma ${esc(t.id)}: ${esc(t.titulo)}"><strong>${i + 1}. ${esc(t.titulo)}</strong><small>${esc(t.id)} · ${t.omitida ? "Omitida" : segundos(t.duracion_corte)}</small></button>`).join("")}</div>
+    <details data-bloque="linea" ${abierto.has("linea") ? "open" : ""}><summary>Editar tomas y quitar fragmentos</summary><ol class="montaje-lista">${m.tomas.map((t, i) => `<li class="montaje-fila ${t.omitida ? "omitida" : ""}">
+      <span class="orden-toma">${i + 1}</span><div class="descripcion-montaje"><b>${esc(t.id)} · ${esc(t.titulo)}</b><small>${esc(etiqueta(t))}</small></div>
+      <button type="button" class="btn" data-editar-montaje="${esc(t.id)}">Recortar / quitar</button>
+      <button type="button" class="btn" data-ir="toma-${esc(t.id)}">Ver toma</button>
+      ${exportarClipHtml(t.id)}
+    </li>`).join("")}</ol></details>
+    <p class="editor-ayuda">Para cambiar algo que aparece dentro de la imagen, abre la toma y elige «Pedir corrección». Una nueva generación muestra su costo y pide tu aprobación.</p>
+    <div class="descargas-montaje"><div class="fila">
+      <button type="button" class="btn prim grande" id="preparar-paquete" data-revision="${!!faltas.length}" ${ocupado() || !estado.ffmpeg ? "disabled" : ""}>${p.paquete && !p.paquete_actualizado ? "Actualizar paquete editado" : "Descargar todo editado"} · gratis</button>
+      ${p.paquete ? `<a class="btn grande" href="${archivo(p.paquete, recarga)}" download>${p.paquete_actualizado ? "Descargar ZIP listo" : "Descargar ZIP anterior"}</a>` : ""}
+      <button type="button" class="btn" data-codex="">Copiar instrucciones para Codex</button>
+    </div><p class="guia">Prepara un ZIP con el montaje y los clips editados. ${faltas.length ? "Se exporta como revisión; conserva pendientes las aprobaciones." : "Se exporta con las tomas aprobadas del video final."} ${p.paquete && !p.paquete_actualizado ? "Hay cambios posteriores al ZIP: actualízalo para incluirlos." : ""}</p></div>
+  </section>`;
+}
+
+function continuidadHtml(t) {
+  const c = t.continuidad || {}, k = "continuidad-" + t.id;
+  return `<details class="continuidad" data-bloque="${esc(k)}" ${abierto.has(k) ? "open" : ""}><summary>Historia y acciones de esta toma</summary>
+    <form class="continuidad-form" data-continuidad="${esc(t.id)}">
+      <p class="editor-ayuda">Define el inicio, la secuencia de acciones y el cierre para mantener la continuidad con las otras tomas. Guardar prepara el prompt de la próxima generación; el clip existente se conserva.</p>
+      <div class="continuidad-grid"><label>Cómo empieza<textarea name="inicio" placeholder="Situación, pose y cámara al comenzar">${esc(c.inicio || "")}</textarea></label><label>Cómo termina<textarea name="fin" placeholder="Situación final para enlazar con la siguiente toma">${esc(c.fin || "")}</textarea></label></div>
+      <label>Acciones, en orden · una por línea<textarea name="acciones" placeholder="El personaje entra en escena&#10;Mira el objeto&#10;Lo toma y sale por la derecha">${esc((c.acciones || []).join("\n"))}</textarea></label>
+      <label>Reglas que deben mantenerse<textarea name="reglas" placeholder="Mismo personaje, cámara y dirección del movimiento; sin saltos de posición">${esc(c.reglas || "")}</textarea></label>
+      <div class="fila"><button type="submit" class="btn prim" ${ocupado() ? "disabled" : ""}>Guardar historia · gratis</button><button type="button" class="btn" data-codex="${esc(t.id)}">Copiar instrucciones para Codex</button></div>
+      <p class="editor-ayuda">Para aplicar una corrección de contenido, usa «Generar otra versión…» en la variante. Verás el costo y aprobarás esa toma antes de enviarla.</p>
+    </form></details>`;
+}
+
+function instruccionesCodex(tid = "") {
+  const todas = prod.secuencias.flatMap(s => s.tomas), elegidas = tid ? todas.filter(t => t.id === tid) : todas;
+  const carpeta = (estado.carpeta || "") + (prod.id && prod.id !== "." ? "/" + prod.id : "");
+  const lineas = ["Ayúdame a mejorar esta producción de estudio-video.", `Producción: ${prod.titulo}`, `Carpeta: ${carpeta}`,
+    "Lee AGENTS.md, produccion.json y guion.md de esta producción para respetar la historia y el orden de las tomas.",
+    `Reglas globales de continuidad: ${prod.continuidad || "por definir"}`,
+    "Cambio que quiero pedir: [escribe aquí la corrección deseada].", "",
+    "Unir, recortar, silenciar y exportar material existente se hace localmente y es gratis. Conserva los originales y las aprobaciones existentes.",
+    `Modelo configurado: ${prod.video.modelo}. Tope configurado por clip: ${usd(prod.video.max_usd_clip)}; este tope no es una aprobación de gasto.`,
+    "No hay gasto aprobado por copiar estas instrucciones. Antes de generar cualquier video nuevo, consulta el saldo, muestra modelo, duración y costo con estudio estimar y espera mi sí explícito para esa toma. No uses rutas de generación del panel ni apruebes materiales por mí.",
+    "No leas ni muestres credenciales y no incluyas claves en recetas o prompts. No subas material sensible sin mi autorización.", ""];
+  for (const t of elegidas) {
+    const n = todas.findIndex(x => x.id === t.id), c = {...(t.continuidad || {})};
+    const formulario = document.querySelector(`[data-continuidad="${t.id}"]`);
+    if (formulario) {
+      const valores = new FormData(formulario);
+      c.inicio = valores.get("inicio") || ""; c.fin = valores.get("fin") || ""; c.reglas = valores.get("reglas") || "";
+      c.acciones = String(valores.get("acciones") || "").split(/\r?\n/).map(a => a.trim()).filter(Boolean);
+    }
+    lineas.push(`Toma ${n + 1}/${todas.length}: ${t.id} · ${t.titulo} · ${t.duracion} s`, `Historia: ${t.descripcion || ""}`,
+      `Anterior: ${todas[n - 1]?.id || "inicio de la historia"}. Siguiente: ${todas[n + 1]?.id || "cierre de la historia"}.`,
+      `Inicio: ${c.inicio || "por definir"}`, "Acciones en orden:", ...(c.acciones || []).map((a, i) => `${i + 1}. ${a}`),
+      `Fin: ${c.fin || "por definir"}`, `Reglas de continuidad: ${c.reglas || "por definir"}`);
+    const edicion = fuenteMontaje(t.id).toma;
+    if (edicion) lineas.push(`Edición local: ${JSON.stringify({inicio: edicion.inicio, fin: edicion.fin, omitida: edicion.omitida, silenciar: edicion.silenciar, quitar: edicion.quitar})}`);
+    for (const v of t.variantes) lineas.push(`Variante ${v.id} · ${v.estado} · estimado ${usd(v.estimado_usd)} · clip: ${v.archivo || "sin clip"}`,
+      `Corrección pedida: ${v.nota || "ninguna"}`, "Prompt de movimiento completo:", v.prompt_completo || v.movimiento || "", "");
+  }
+  lineas.push("Primero propón o guarda los ajustes gratuitos y explica qué exigiría generar otra toma. Cualquier generación pagada requiere una aprobación nueva.");
+  return lineas.join("\n");
+}
+
 function pintarProduccion() {
   const p = prod, r = p.resumen, pos = window.scrollY;
   const colorSec = {}; p.secuencias.forEach((s, i) => colorSec[s.id] = COLORES[i % COLORES.length]);
@@ -327,25 +517,28 @@ function pintarProduccion() {
       <div class="pildoras"><span>${esc(p.video.modelo)}</span><span>${esc(p.video.resolucion || "")} · ${esc(p.video.formato || "")}</span>
         <span>audio ${p.video.audio ? "sí" : "no"}</span><span>tope por clip ${usd(p.video.max_usd_clip)}</span><span>${r.por_revisar} por revisar</span></div>
     </div></header>
-    <nav class="secnav" aria-label="Secuencias"><div class="envoltura">${p.secuencias.map(s => `<a class="secbtn" href="#sec-${esc(s.id)}" data-ir="sec-${esc(s.id)}"><i style="background:${colorSec[s.id]}"></i>${esc(s.id)} · ${esc(s.titulo)} <small>${conteo(s)}</small></a>`).join("")}</div></nav>
+    <nav class="secnav" aria-label="Secuencias"><div class="envoltura"><a class="secbtn" href="#montaje" data-ir="montaje">▶ Video final</a>${p.secuencias.map(s => `<a class="secbtn" href="#sec-${esc(s.id)}" data-ir="sec-${esc(s.id)}"><i style="background:${colorSec[s.id]}"></i>${esc(s.id)} · ${esc(s.titulo)} <small>${conteo(s)}</small></a>`).join("")}</div></nav>
     <main class="envoltura">
-      ${trabajoHtml()}
+      <div id="trabajo-panel">${trabajoHtml()}</div>
+      <ol class="pasos" aria-label="Pasos para terminar el video"><li><a href="#historia" data-ir="historia"><b>1</b> Revisa la historia</a></li><li><a href="#tomas" data-ir="tomas"><b>2</b> Prepara y aprueba tomas</a></li><li><a href="#montaje" data-ir="montaje"><b>3</b> Arma el video final</a></li><li><a href="#montaje" data-ir="montaje"><b>4</b> Recorta o pide cambios</a></li></ol>
+      ${montajeHtml(p)}
       <div class="siguiente"><div><b>SIGUIENTE</b>${p.faltan_imagenes ? `Faltan ${p.faltan_imagenes} imágenes de toma (la primera: ${esc(p.siguiente[0])}). Súbelas aquí o pide a un agente que las genere con <code>estudio produccion estado</code>.`
-        : r.por_revisar ? `Hay ${r.por_revisar} piezas por revisar.` : r.clips_aprobados < r.clips ? "Genera y revisa los clips de cada variante." : "Todo aprobado: arma la animática."}</div></div>
+        : r.por_revisar ? `Hay ${r.por_revisar} piezas por revisar. Aprueba una variante de cada toma para incluirla en el video final.` : p.montaje?.faltas.length ? "Prepara un clip aprobado para cada toma incluida en la historia." : "Las tomas están listas: arma el video final."}</div></div>
       <div class="herramientas"><button type="button" class="alterna" id="solo-pendiente" aria-pressed="${soloPendiente}">Solo tomas con algo pendiente</button>
         <button type="button" class="alterna" id="ver-prompts" aria-pressed="${verPrompts}">Mostrar prompts</button></div>
-      <details class="bloque" data-bloque="guion" ${abierto.has("guion") ? "open" : ""}><summary>00 · Guion</summary><div class="cuerpo-bloque">
+      <details class="bloque" id="historia" data-bloque="guion" ${abierto.has("guion") ? "open" : ""}><summary>01 · Historia y estilo</summary><div class="cuerpo-bloque">
         ${p.guion ? `<div class="guion">${esc(p.guion)}</div>` : `<p class="vacio">Sin guion.md en la producción.</p>`}
-        ${p.estilo ? `<div class="campo">Estilo común a todas las tomas</div><div class="texto-campo">${esc(p.estilo)}</div>` : ""}</div></details>
-      <details class="bloque" data-bloque="personajes" ${abierto.has("personajes") ? "open" : ""}><summary>01 · Personajes · aspecto y referencias</summary><div class="cuerpo-bloque">
+        ${p.estilo ? `<div class="campo">Estilo común a todas las tomas</div><div class="texto-campo">${esc(p.estilo)}</div>` : ""}
+        ${p.continuidad ? `<div class="campo">Reglas globales de continuidad</div><div class="texto-campo">${esc(p.continuidad)}</div>` : ""}</div></details>
+      <details class="bloque" data-bloque="personajes" ${abierto.has("personajes") ? "open" : ""}><summary>Personajes · aspecto y referencias</summary><div class="cuerpo-bloque">
         <p class="guia">Cada personaje se define una sola vez. Su aspecto entra en el prompt de cada toma donde aparece. Una referencia nueva lo regresa a «por revisar».</p>
         ${p.personajes.length ? `<div class="personajes">${personajes}</div>` : `<p class="vacio">Esta producción no tiene personajes.</p>`}</div></details>
-      <details class="bloque animatica" data-bloque="animatica" ${abierto.has("animatica") ? "open" : ""}><summary>02 · Animática · corte preliminar</summary><div class="cuerpo-bloque">
+      <details class="bloque animatica" data-bloque="animatica" ${abierto.has("animatica") ? "open" : ""}><summary>Vista preliminar · con imágenes si faltan clips</summary><div class="cuerpo-bloque">
         <p class="guia">En orden del guion: el clip aprobado de cada toma (el marcado para el corte o el primero aprobado), recortado a su duración; si no hay clip, su imagen aprobada fija; si tampoco, negro. No gasta saldo.</p>
         <button type="button" class="btn prim grande" id="armar-animatica" ${ocupado() || !estado.ffmpeg ? "disabled" : ""}>${p.animatica ? "Volver a armar la animática" : "Armar animática"}</button>
         ${!estado.ffmpeg ? `<p class="error-texto">Necesita ffmpeg.</p>` : ""}
         ${p.animatica ? `<video src="${archivo(p.animatica, recarga)}" controls preload="metadata"></video><p><a href="${archivo(p.animatica)}" download>Descargar animática</a></p>` : ""}</div></details>
-      <div class="${verPrompts ? "" : "sin-prompts"}">${secuencias || `<p class="vacio">No hay tomas con pendientes.</p>`}</div>
+      <div id="tomas" class="${verPrompts ? "" : "sin-prompts"}"><div class="ceja" style="margin-top:24px">02 · Prepara y revisa cada toma</div>${secuencias || `<p class="vacio">No hay tomas con pendientes.</p>`}</div>
     </main>`;
   window.scrollTo(0, pos);
 }
@@ -355,7 +548,7 @@ function toma(t) {
   const imgs = t.imagenes.map(i => `<div class="tesela ${i.estado === "aprobada" ? "aprobada" : ""}">
       ${soltar(i.archivo, "la imagen " + i.id, `data-toma="${esc(t.id)}" data-imagen="${esc(i.id)}"`, `Toma ${t.id}, imagen ${i.id}`, i.id)}
       <div class="tcuerpo"><div class="fila" style="margin:0">${chip(i.estado)}${i.versiones ? `<span class="chip">${i.versiones} ant.</span>` : ""}</div>
-        <div class="tdesc">${esc(i.prompt)}</div>${i.nota ? `<div class="nota">Nota: ${esc(i.nota)}</div>` : ""}
+        <div class="tdesc" title="${esc(i.prompt)}">${esc(i.prompt)}</div>${i.nota ? `<div class="nota">Nota: ${esc(i.nota)}</div>` : ""}
         <div class="tprompt">${esc(i.prompt_completo)}</div>
         <div class="tfila">${i.estado === "pendiente" ? `<button type="button" class="btn okb crece" data-grupo="imagenes" data-clave="${esc(t.id + "/" + i.id)}" data-decision="aprobar">Aprobar</button>` : ""}
           ${i.estado === "pendiente" || i.estado === "aprobada" ? `<button type="button" class="btn malb" data-grupo="imagenes" data-clave="${esc(t.id + "/" + i.id)}" data-decision="descartar">Descartar</button>` : ""}
@@ -370,17 +563,21 @@ function toma(t) {
     return `<div class="vtarjeta ${v.en_corte ? "corte" : ""}">
       <div class="vcab"><b>Variante ${esc(v.id)}</b><span class="chips" style="margin:0">${v.en_corte ? `<span class="chip ok">En el corte</span>` : ""}${v.versiones ? `<span class="chip">${v.versiones} ant.</span>` : ""}
         ${v.estado === "falta" ? `<span class="chip">Sin clip</span>` : chip(v.estado)}</span></div>
-      <div class="vcuerpo"><div class="cuadros">
+      <details class="detalle" data-bloque="mov-${k}" ${abierto.has("mov-" + t.id + "/" + v.id) ? "open" : ""}><summary>Movimiento y fotogramas para generar</summary><div class="vcuerpo"><div class="cuadros">
           ${mini(v.primer, "Primer")}<label>Primer<select data-var="${k}" data-campo="primer">${opciones(v.primer, "— ninguno —")}</select></label>
           ${mini(v.ultimo, "Último")}<label>Último<select data-var="${k}" data-campo="ultimo">${opciones(v.ultimo, "— ninguno —")}</select></label></div>
         <div class="vtexto"><textarea data-var="${k}" data-campo="movimiento" aria-label="Movimiento de la variante ${k}" placeholder="Movimiento de cámara y acción">${esc(v.movimiento)}</textarea>
           <div class="costo">Genera ${esc(v.duracion_generada)} s (toma de ${esc(t.duracion)} s) · estimado ${usd(v.estimado_usd)} · tope ${usd(v.max_usd)}${v.costo_usd != null ? ` · costó ${usd(v.costo_usd)}` : ""}</div>
           ${v.faltas.length ? `<p class="error-texto">Antes de generar: ${esc(v.faltas.join("; "))}</p>` : supera ? `<p class="error-texto">El estimado supera el tope por clip.</p>` : ""}
-          ${v.nota ? `<p class="nota">Nota: ${esc(v.nota)}</p>` : ""}
-          <div class="tprompt" style="margin-top:6px">${esc(v.prompt_completo)}</div></div></div>
+          ${v.nota ? `<p class="nota">${v.correccion_pendiente ? "Corrección pedida para la próxima versión" : "Nota"}: ${esc(v.nota)}</p>` : ""}
+          <div class="tprompt" style="margin-top:6px">${esc(v.prompt_completo)}</div></div></div></details>
+      ${v.correccion_pendiente ? `<p class="nota" style="padding:0 11px">Corrección pendiente: ${esc(v.nota)}</p>` : ""}
       <div class="clip">${v.archivo ? `<video src="${archivo(v.archivo, recarga)}" controls preload="metadata" aria-label="Clip ${k}"></video>` : "Sin clip todavía"}</div>
+      ${v.archivo && v.instrucciones_actualizadas ? `<p class="aviso" style="margin:10px 11px">Historia actualizada: este clip conserva la versión anterior. Revisa imágenes y genera otra versión para aplicar los cambios.</p>` : ""}
       <div class="vpie"><button type="button" class="btn barro" data-generar-var="${k}" ${motivo ? `disabled title="${esc(motivo)}"` : ""}>${v.archivo ? "Generar otra versión…" : "Generar…"}</button>
         ${v.archivo ? `${v.estado === "pendiente" ? `<button type="button" class="btn okb" data-grupo="clips" data-clave="${k}" data-decision="aprobar">Aprobar</button>` : ""}
+          <button type="button" class="btn" data-correccion="${k}">Pedir corrección</button>
+          <button type="button" class="btn" data-editar-montaje="${esc(t.id)}">Recortar / quitar</button>
           <button type="button" class="btn malb" data-grupo="clips" data-clave="${k}" data-decision="descartar">Descartar</button>
           ${v.estado === "aprobada" && !v.en_corte ? `<button type="button" class="btn" data-corte="${k}">Usar en el corte</button>` : ""}
           <button type="button" class="btn" data-revisar="${esc(v.archivo)}">Revisar</button><a class="btn" href="${archivo(v.archivo)}" download>Descargar</a>` : ""}
@@ -392,8 +589,10 @@ function toma(t) {
       <span class="chips"><span class="chip">${esc(t.duracion)} s en el corte</span><span class="chip ${aprob === t.imagenes.length && aprob ? "ok" : ""}">${aprob}/${t.imagenes.length} img aprobadas</span></span></div>
     ${t.descripcion ? `<p class="uso"><b>EN EL CORTE</b>${esc(t.descripcion)}</p>` : ""}
     ${t.personajes.length ? `<div class="elenco"><span class="meta" style="font-size:11px">ELENCO</span>${t.personajes.map(x => `<span>${esc((prod.personajes.find(c => c.id === x) || {}).nombre || x)}</span>`).join("")}</div>` : ""}
-    <div class="rotulo"><span>Imágenes</span><span>${t.imagenes.filter(i => i.archivo).length} de ${t.imagenes.length} subidas</span></div>
-    ${imgs ? `<div class="imgs">${imgs}</div>` : `<p class="vacio">Sin imágenes definidas.</p>`}
+    ${continuidadHtml(t)}
+    <div class="fila">${exportarClipHtml(t.id)}</div>
+    <details class="detalle" data-bloque="img-${esc(t.id)}" ${abierto.has("img-" + t.id) ? "open" : ""}><summary>Imágenes de referencia · ${t.imagenes.filter(i => i.archivo).length} de ${t.imagenes.length} subidas · ${aprob} aprobadas</summary>
+    ${imgs ? `<div class="imgs">${imgs}</div>` : `<p class="vacio">Sin imágenes definidas.</p>`}</details>
     <div class="rotulo"><span>Video · variantes</span></div>
     ${vars ? `<div class="vids">${vars}</div>` : `<p class="vacio">Sin variantes definidas.</p>`}</article>`;
 }
@@ -481,11 +680,50 @@ $("d-generar").addEventListener("click", async () => {
   } catch (e) { $("d-error").textContent = e.message; $("d-error").hidden = false; }
 });
 let notaPendiente = null;
-function pedirNota(titulo, accionFn) { notaPendiente = accionFn; $("n-titulo").textContent = titulo; $("n-texto").value = ""; $("nota").showModal(); $("n-texto").focus(); }
+function pedirNota(titulo, accionFn, ayuda = "Qué cambiar. Se agrega al prompt de la siguiente versión.", inicial = "") {
+  notaPendiente = accionFn; $("n-titulo").textContent = titulo; $("n-ayuda").textContent = ayuda;
+  $("n-texto").value = inicial; $("n-error").hidden = true; $("n-ok").disabled = false;
+  $("nota").showModal(); $("n-texto").focus();
+}
 $("n-ok").addEventListener("click", async () => {
   const texto = $("n-texto").value.trim(); if (!texto) { $("n-texto").focus(); return; }
-  $("nota").close();
-  try { await notaPendiente(texto); } catch (e) { aviso(e.message); }
+  $("n-ok").disabled = true; $("n-error").hidden = true;
+  try { await notaPendiente(texto); $("nota").close(); exito("Nota guardada. Puedes revisar el siguiente paso en la toma."); }
+  catch (e) { $("n-error").textContent = e.message; $("n-error").hidden = false; }
+  finally { $("n-ok").disabled = false; }
+});
+function agregarIntervalo(inicio = "", fin = "") {
+  const fila = document.createElement("div"); fila.className = "intervalo";
+  fila.innerHTML = `<label>Quitar desde (s)<input type="number" data-corte-inicio min="0" step="any" value="${esc(inicio)}" required></label><label>Hasta (s)<input type="number" data-corte-fin min="0" step="any" value="${esc(fin)}" required></label><button type="button" class="btn malb" data-quitar-intervalo aria-label="Conservar este fragmento">×</button>`;
+  $("m-intervalos").append(fila);
+}
+function editarMontaje(tid) {
+  const original = prod.montaje?.tomas.find(t => t.id === tid); if (!original) return;
+  const revision = prod.montaje_revision?.tomas.find(t => t.id === tid);
+  const t = original.archivo ? original : {...original, archivo: revision?.archivo, variante: revision?.variante, imagen: revision?.imagen};
+  edicionPendiente = {id: actual, toma: tid};
+  $("m-titulo").textContent = `${t.id} · ${t.titulo}`;
+  $("m-fuente").textContent = `${t.imagen ? "Imagen fija de revisión" : t.archivo ? "Variante " + (t.variante || "") + (!original.archivo ? " · pendiente de aprobación" : "") : "Esta toma aún no tiene video"} · ${segundos(t.duracion)} en el guion. Los tiempos corresponden al clip original.`;
+  $("m-preview").innerHTML = t.archivo ? t.imagen ? `<img class="editor-video" src="${archivo(t.archivo, recarga)}" alt="Imagen fija para la toma ${esc(t.id)}" style="object-fit:contain">` : `<video class="editor-video" src="${archivo(t.archivo, recarga)}" controls preload="metadata" aria-label="Clip original de ${esc(t.id)}"></video>` : "";
+  $("m-incluir").checked = !t.omitida; $("m-inicio").value = t.inicio || 0; $("m-fin").value = t.fin ?? "";
+  $("m-fin").placeholder = `${t.duracion} s (duración del guion)`; $("m-silenciar").checked = !!t.silenciar;
+  $("m-intervalos").innerHTML = ""; (t.quitar || []).forEach(q => agregarIntervalo(q.inicio, q.fin));
+  $("m-error").hidden = true; $("m-guardar").disabled = false; $("editor-montaje").showModal();
+}
+$("m-agregar").addEventListener("click", () => { agregarIntervalo(); $("m-intervalos").lastElementChild.querySelector("input").focus(); });
+$("m-cancelar").addEventListener("click", () => $("editor-montaje").close());
+$("editor-montaje").addEventListener("close", () => { $("m-preview").innerHTML = ""; edicionPendiente = null; });
+$("m-form").addEventListener("submit", async e => {
+  e.preventDefault(); if (!edicionPendiente || !e.target.reportValidity()) return;
+  const datos = {accion: "montaje_toma", ...edicionPendiente, inicio: Number($("m-inicio").value), fin: $("m-fin").value === "" ? null : Number($("m-fin").value),
+    omitida: !$("m-incluir").checked, silenciar: $("m-silenciar").checked,
+    quitar: [...$("m-intervalos").children].map(f => ({inicio: Number(f.querySelector("[data-corte-inicio]").value), fin: Number(f.querySelector("[data-corte-fin]").value)}))};
+  $("m-error").hidden = true; $("m-guardar").disabled = true; $("m-guardar").textContent = "Guardando…";
+  try {
+    await api("/api/produccion/accion", datos); $("editor-montaje").close(); await cargarProduccion();
+    exito("Ajustes guardados. Arma el video final para aplicar los recortes.");
+  } catch (err) { $("m-error").textContent = err.message; $("m-error").hidden = false; }
+  finally { $("m-guardar").disabled = false; $("m-guardar").textContent = "Guardar ajustes"; }
 });
 async function accion(datos) { await api("/api/produccion/accion", {id: actual, ...datos}); await cargarProduccion(); }
 async function subir(caja, archivoSubido) {
@@ -502,7 +740,37 @@ document.addEventListener("click", async e => {
   const tab = e.target.closest("[data-tab]");
   if (tab) { actual = tab.dataset.tab; history.replaceState(null, "", "#" + encodeURIComponent(actual)); window.scrollTo(0, 0); return cargar(); }
   const ir = e.target.closest("[data-ir]");
-  if (ir) { e.preventDefault(); document.getElementById(ir.dataset.ir)?.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); return; }
+  if (ir) {
+    e.preventDefault(); let destino = document.getElementById(ir.dataset.ir);
+    if (!destino && ir.dataset.ir.startsWith("toma-") && soloPendiente) { soloPendiente = false; pintarProduccion(); destino = document.getElementById(ir.dataset.ir); }
+    if (destino?.matches("details")) destino.open = true;
+    destino?.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); return;
+  }
+  const editar = e.target.closest("[data-editar-montaje]"); if (editar) return editarMontaje(editar.dataset.editarMontaje);
+  const quitar = e.target.closest("[data-quitar-intervalo]"); if (quitar) return quitar.closest(".intervalo").remove();
+  const codex = e.target.closest("[data-codex]");
+  if (codex) {
+    try { await navigator.clipboard.writeText(instruccionesCodex(codex.dataset.codex)); exito("Instrucciones copiadas. Pégalas en Codex y escribe la corrección que quieres pedir."); }
+    catch { aviso("No se pudo copiar. Permite el portapapeles del navegador e inténtalo otra vez."); } return;
+  }
+  const exportar = e.target.closest("[data-exportar-clip]");
+  if (exportar) {
+    exportar.disabled = true;
+    try { await api("/api/produccion/clip-editado", {id: actual, toma: exportar.dataset.exportarClip, revision: exportar.dataset.revision === "true"}); anunciar("Exportando clip editado sin costo"); await cargar(); }
+    catch (err) { exportar.disabled = false; aviso(err.message); } return;
+  }
+  if (e.target.id === "preparar-paquete") {
+    e.target.disabled = true;
+    try { await api("/api/produccion/paquete", {id: actual, revision: e.target.dataset.revision === "true"}); anunciar("Preparando ZIP con el montaje y los clips editados sin costo"); await cargar(); }
+    catch (err) { e.target.disabled = false; aviso(err.message); } return;
+  }
+  const corregir = e.target.closest("[data-correccion]");
+  if (corregir) {
+    const [toma, variante] = corregir.dataset.correccion.split("/");
+    const v = prod.secuencias.flatMap(s => s.tomas).find(t => t.id === toma)?.variantes.find(v => v.id === variante);
+    return pedirNota(`Pedir corrección · ${toma}/${variante}`, nota => accion({accion: "correccion", toma, variante, nota}),
+      "Describe qué debe cambiar (por ejemplo: quitar un objeto o suavizar el movimiento). Guardar conserva el clip actual. Para aplicar la corrección, genera otra versión después de revisar y aprobar su costo.", v?.nota || "");
+  }
   if (e.target.id === "solo-pendiente") { soloPendiente = !soloPendiente; return pintarProduccion(); }
   if (e.target.id === "ver-prompts") { verPrompts = !verPrompts; return pintarProduccion(); }
   if (e.target.id === "solo-pendientes") { e.target.setAttribute("aria-pressed", e.target.getAttribute("aria-pressed") !== "true"); return pintarRecetas(); }
@@ -539,8 +807,18 @@ document.addEventListener("click", async e => {
     return;
   }
   if (e.target.id === "armar-animatica") { try { await api("/api/produccion/animatica", {id: actual}); anunciar("Armando animática"); cargar(); } catch (err) { aviso(err.message); } return; }
+  if (e.target.id === "armar-final") {
+    e.target.disabled = true;
+    try { await api("/api/produccion/montar", {id: actual}); anunciar("Armando un solo video en el orden del guion"); cargar(); }
+    catch (err) { e.target.disabled = false; aviso(err.message); } return;
+  }
+  if (e.target.id === "armar-revision") {
+    e.target.disabled = true;
+    try { await api("/api/produccion/montar-revision", {id: actual}); anunciar("Armando una revisión continua de la historia"); cargar(); }
+    catch (err) { e.target.disabled = false; aviso(err.message); } return;
+  }
   const b = e.target.closest("[data-revisar],[data-ultimo]"); if (!b) return;
-  const caja = b.closest(".dcuerpo, .vtarjeta").querySelector(".resultado-accion");
+  const caja = b.closest(".dcuerpo, .vtarjeta, .montaje").querySelector(".resultado-accion");
   b.disabled = true; caja.textContent = "Procesando…";
   try {
     if (b.dataset.revisar) {
@@ -552,6 +830,22 @@ document.addEventListener("click", async e => {
     }
   } catch (err) { caja.innerHTML = `<p class="error-texto">${esc(err.message)}</p>`; }
   finally { b.disabled = false; }
+});
+
+document.addEventListener("submit", async e => {
+  if (e.target.matches("[data-continuidad]")) {
+    e.preventDefault(); const boton = e.target.querySelector("button[type=submit]"), valores = new FormData(e.target);
+    boton.disabled = true; const titulo = boton.textContent; boton.textContent = "Guardando…";
+    try {
+      await accion({accion: "continuidad", toma: e.target.dataset.continuidad, inicio: valores.get("inicio"), fin: valores.get("fin"), reglas: valores.get("reglas"),
+        acciones: String(valores.get("acciones") || "").split(/\r?\n/).map(a => a.trim()).filter(Boolean)});
+      exito("Historia guardada. El prompt de la próxima generación incluye estos pasos; el clip actual se conserva.");
+    } catch (err) { aviso(err.message); boton.disabled = false; boton.textContent = titulo; } return;
+  }
+  if (e.target.id !== "transicion-form") return;
+  e.preventDefault(); const boton = e.target.querySelector("button"); boton.disabled = true;
+  try { await accion({accion: "montaje_config", fundido: Number($("fundido").value)}); exito("Transición guardada. Arma el video final para aplicar el cambio."); }
+  catch (err) { aviso(err.message); boton.disabled = false; }
 });
 document.addEventListener("change", async e => {
   const f = e.target.closest("[data-soltar] input[type=file]");

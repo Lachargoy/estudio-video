@@ -7,7 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import costos, generacion, limpieza, produccion, receta
+from . import costos, exportacion, generacion, limpieza, produccion, receta
 from .comfy import Cliente, ErrorComfy
 
 
@@ -56,6 +56,15 @@ def cmd_produccion(args):
     prod = produccion.Produccion(args.carpeta)
     if args.accion == "animatica":
         prod.animatica()
+        return
+    if args.accion == "montar":
+        prod.montar()
+        return
+    if args.accion == "revision":
+        prod.montar_revision()
+        return
+    if args.accion == "paquete":
+        exportacion.paquete(prod, revision=args.revision)
         return
     try:
         catalogo = costos.catalogo()
@@ -159,10 +168,11 @@ def main(argv=None):
     w.add_argument("--nombre", default="video")
     w.add_argument("--blanco", action="store_true", help="Empuja el casi blanco a blanco puro")
     w.set_defaults(f=cmd_web)
-    pr = sub.add_parser("produccion", help="Producciones: crear una nueva, ver qué falta o armar la animática")
-    pr.add_argument("accion", choices=["nueva", "estado", "animatica"])
+    pr = sub.add_parser("produccion", help="Producciones: crear, revisar, armar la animática o montar el video final")
+    pr.add_argument("accion", choices=["nueva", "estado", "animatica", "montar", "revision", "paquete"])
     pr.add_argument("carpeta")
     pr.add_argument("--titulo")
+    pr.add_argument("--revision", action="store_true", help="El paquete puede incluir clips pendientes e imágenes fijas")
     pr.set_defaults(f=cmd_produccion)
     pa = sub.add_parser("panel", help="Panel local para ver recetas, costos y resultados, y generar con aprobación")
     pa.add_argument("carpeta", nargs="?", default=".", help="Carpeta con recetas (por defecto, la actual)")
